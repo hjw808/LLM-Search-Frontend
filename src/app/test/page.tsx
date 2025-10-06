@@ -306,21 +306,10 @@ export default function TestPage() {
   }
 
   if (!businessConfig || !businessConfig.name) {
-    return (
-      <div className="space-y-6">
-        <div className="backdrop-blur-xl bg-blue-500/10 border border-blue-500/20 rounded-2xl p-6">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-blue-400 mt-0.5" />
-            <div>
-              <p className="text-white font-medium mb-1">Configuration Required</p>
-              <p className="text-slate-400 text-sm">
-                Please configure your business settings in the form below before running tests.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    // Open config modal by default if no config exists
+    if (!isConfigModalOpen) {
+      setIsConfigModalOpen(true);
+    }
   }
 
   const isRunning = testProgress.status === "running";
