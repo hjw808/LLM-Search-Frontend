@@ -15,8 +15,30 @@ interface BusinessConfig {
 }
 
 const CONFIG_PATH = join(process.cwd(), '..', 'ai-visibility-tester', 'config.yaml');
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export async function GET() {
+  // If backend URL is set, use external backend (production mode)
+  if (BACKEND_URL) {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/config`);
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch config from backend');
+      }
+
+      const config = await response.json();
+      return NextResponse.json(config);
+    } catch (error) {
+      console.error('Error fetching config from backend:', error);
+      return NextResponse.json(
+        { error: 'Failed to read configuration' },
+        { status: 500 }
+      );
+    }
+  }
+
+  // Local development mode - read from file system
   try {
     const configData = await readFile(CONFIG_PATH, 'utf-8');
     const config = yaml.load(configData) as Record<string, unknown>;
@@ -43,9 +65,36 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const businessConfig: BusinessConfig = await request.json();
+  const businessConfig: BusinessConfig = await request.json();
 
+  // If backend URL is set, use external backend (production mode)
+  if (BACKEND_URL) {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/config`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(businessConfig),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save config to backend');
+      }
+
+      const result = await response.json();
+      return NextResponse.json(result);
+    } catch (error) {
+      console.error('Error saving config to backend:', error);
+      return NextResponse.json(
+        { error: 'Failed to save configuration' },
+        { status: 500 }
+      );
+    }
+  }
+
+  // Local development mode - write to file system
+  try {
     const yamlConfig = {
       business_name: businessConfig.name,
       business_url: businessConfig.url,
