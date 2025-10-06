@@ -72,8 +72,8 @@ export async function POST(request: NextRequest) {
     console.log('Created test run metadata:', metadataPath);
 
     const results = [];
-    const queriesPaths: string[] = [];
-    const responsesPaths: string[] = [];
+    const queriesPaths: (string | null)[] = [];
+    const responsesPaths: (string | null)[] = [];
 
     // Step 1: Generate queries for all providers
     for (const provider of providers) {
