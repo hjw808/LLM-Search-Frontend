@@ -85,6 +85,13 @@ export default function TestPage() {
     loadBusinessConfig();
   }, []);
 
+  useEffect(() => {
+    // Auto-open config modal if no business config exists
+    if (isConfigLoaded && (!businessConfig || !businessConfig.name)) {
+      setIsConfigModalOpen(true);
+    }
+  }, [isConfigLoaded, businessConfig]);
+
   const loadBusinessConfig = async () => {
     try {
       const response = await fetch('/api/config');
@@ -303,13 +310,6 @@ export default function TestPage() {
         </div>
       </div>
     );
-  }
-
-  if (!businessConfig || !businessConfig.name) {
-    // Open config modal by default if no config exists
-    if (!isConfigModalOpen) {
-      setIsConfigModalOpen(true);
-    }
   }
 
   const isRunning = testProgress.status === "running";
