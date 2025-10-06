@@ -27,7 +27,27 @@ interface TestResult {
   provider_reports: ProviderReport[];
 }
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 export async function GET() {
+  // If backend URL is set, proxy to external backend (production mode)
+  if (BACKEND_URL) {
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/reports`);
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch reports from backend');
+      }
+
+      const reports = await response.json();
+      return NextResponse.json(reports);
+    } catch (error) {
+      console.error('Error fetching reports from backend:', error);
+      return NextResponse.json([]);
+    }
+  }
+
+  // Local development mode - read from file system
   try {
     const resultsPath = join(process.cwd(), '..', 'ai-visibility-tester', 'results');
     console.log('Reading reports from:', resultsPath);
