@@ -458,7 +458,7 @@ export default function TestPage() {
                 <label htmlFor="location-type" className="text-sm font-medium text-slate-300">Location Type</label>
                 <Select
                   value={businessConfig.locationType}
-                  onValueChange={(value: string) => setBusinessConfig({
+                  onValueChange={(value: "global" | "country" | "country_state" | "country_state_city") => setBusinessConfig({
                     ...businessConfig,
                     locationType: value,
                     location: {} // Reset location when type changes
