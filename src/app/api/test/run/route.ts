@@ -63,66 +63,90 @@ export async function POST(request: NextRequest) {
     if (BACKEND_URL) {
       console.log('Using external backend:', BACKEND_URL);
 
-      const backendResponse = await fetch(`${BACKEND_URL}/api/test/run`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          providers,
-          query_types: queryTypes,
-          consumer_queries: consumerQueries,
-          business_queries: businessQueries,
-        }),
-      });
+      try {
+        const backendResponse = await fetch(`${BACKEND_URL}/api/test/run`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            providers,
+            query_types: queryTypes,
+            consumer_queries: consumerQueries,
+            business_queries: businessQueries,
+          }),
+        });
 
-      if (!backendResponse.ok) {
-        const error = await backendResponse.json();
-        throw new Error(error.detail || 'Backend request failed');
+        if (!backendResponse.ok) {
+          const errorText = await backendResponse.text();
+          console.error('Backend error response:', errorText);
+          throw new Error(`Backend request failed: ${backendResponse.status} ${errorText}`);
+        }
+
+        const data = await backendResponse.json();
+        const jobId = data.job_id;
+
+        console.log('Test run started, job ID:', jobId);
+
+        // Poll for results
+        const maxAttempts = 60; // 5 minutes max (5 second intervals)
+        let attempts = 0;
+
+        while (attempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+
+          try {
+            const statusResponse = await fetch(`${BACKEND_URL}/api/test/status/${jobId}`);
+
+            if (!statusResponse.ok) {
+              console.error(`Status check failed: ${statusResponse.status} ${statusResponse.statusText}`);
+              throw new Error(`Failed to get test status: ${statusResponse.status}`);
+            }
+
+            const status = await statusResponse.json();
+            console.log(`Poll ${attempts + 1}: ${status.status} - ${status.progress}% - ${status.message}`);
+
+            if (status.status === 'completed') {
+              console.log('Test run completed successfully');
+              return NextResponse.json({
+                success: true,
+                message: 'Test run completed successfully',
+                results: status.results || [],
+              });
+            }
+
+            if (status.status === 'failed') {
+              throw new Error(status.error || 'Test run failed');
+            }
+
+            attempts++;
+          } catch (pollError) {
+            console.error(`Poll attempt ${attempts + 1} failed:`, pollError);
+
+            // If polling fails, wait and retry
+            if (attempts >= 3) {
+              // After 3 failed polls, give up
+              throw pollError;
+            }
+            attempts++;
+          }
+        }
+
+        // Timeout
+        return NextResponse.json(
+          { error: 'Test run timed out. Check backend logs.' },
+          { status: 408 }
+        );
+      } catch (backendError) {
+        console.error('Backend communication error:', backendError);
+        return NextResponse.json(
+          {
+            error: backendError instanceof Error ? backendError.message : 'Failed to communicate with backend',
+            details: 'Make sure NEXT_PUBLIC_BACKEND_URL is set correctly and the backend is running'
+          },
+          { status: 500 }
+        );
       }
-
-      const data = await backendResponse.json();
-      const jobId = data.job_id;
-
-      console.log('Test run started, job ID:', jobId);
-
-      // Poll for results
-      const maxAttempts = 60; // 5 minutes max (5 second intervals)
-      let attempts = 0;
-
-      while (attempts < maxAttempts) {
-        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
-
-        const statusResponse = await fetch(`${BACKEND_URL}/api/test/status/${jobId}`);
-
-        if (!statusResponse.ok) {
-          throw new Error('Failed to get test status');
-        }
-
-        const status = await statusResponse.json();
-        console.log(`Poll ${attempts + 1}: ${status.status} - ${status.progress}% - ${status.message}`);
-
-        if (status.status === 'completed') {
-          console.log('Test run completed successfully');
-          return NextResponse.json({
-            success: true,
-            message: 'Test run completed successfully',
-            results: status.results || [],
-          });
-        }
-
-        if (status.status === 'failed') {
-          throw new Error(status.error || 'Test run failed');
-        }
-
-        attempts++;
-      }
-
-      // Timeout
-      return NextResponse.json(
-        { error: 'Test run timed out. Check backend logs.' },
-        { status: 408 }
-      );
     }
 
     // Local development mode - run Python scripts directly
