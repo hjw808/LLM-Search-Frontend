@@ -20,6 +20,8 @@ interface TestResult {
   collectError?: string;
 }
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 // Load environment variables from the tester directory
 function loadTesterEnv(): Record<string, string> {
   const testerDir = join(process.cwd(), '..', 'ai-visibility-tester');
@@ -56,6 +58,75 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // If backend URL is set, proxy to external backend (production mode)
+    if (BACKEND_URL) {
+      console.log('Using external backend:', BACKEND_URL);
+
+      const backendResponse = await fetch(`${BACKEND_URL}/api/test/run`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          providers,
+          query_types: queryTypes,
+          consumer_queries: consumerQueries,
+          business_queries: businessQueries,
+        }),
+      });
+
+      if (!backendResponse.ok) {
+        const error = await backendResponse.json();
+        throw new Error(error.detail || 'Backend request failed');
+      }
+
+      const data = await backendResponse.json();
+      const jobId = data.job_id;
+
+      console.log('Test run started, job ID:', jobId);
+
+      // Poll for results
+      const maxAttempts = 60; // 5 minutes max (5 second intervals)
+      let attempts = 0;
+
+      while (attempts < maxAttempts) {
+        await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+
+        const statusResponse = await fetch(`${BACKEND_URL}/api/test/status/${jobId}`);
+
+        if (!statusResponse.ok) {
+          throw new Error('Failed to get test status');
+        }
+
+        const status = await statusResponse.json();
+        console.log(`Poll ${attempts + 1}: ${status.status} - ${status.progress}% - ${status.message}`);
+
+        if (status.status === 'completed') {
+          console.log('Test run completed successfully');
+          return NextResponse.json({
+            success: true,
+            message: 'Test run completed successfully',
+            results: status.results || [],
+          });
+        }
+
+        if (status.status === 'failed') {
+          throw new Error(status.error || 'Test run failed');
+        }
+
+        attempts++;
+      }
+
+      // Timeout
+      return NextResponse.json(
+        { error: 'Test run timed out. Check backend logs.' },
+        { status: 408 }
+      );
+    }
+
+    // Local development mode - run Python scripts directly
+    console.log('Using local Python execution');
 
     // Path to the Python scripts
     const workingDir = join(process.cwd(), '..', 'ai-visibility-tester');
