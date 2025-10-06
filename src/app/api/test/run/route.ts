@@ -10,6 +10,16 @@ interface TestRequest {
   businessQueries: number;
 }
 
+interface TestResult {
+  provider: string;
+  success: boolean;
+  queriesPath?: string | null;
+  responsesPath?: string | null;
+  totalQueries?: number;
+  error?: string;
+  collectError?: string;
+}
+
 // Load environment variables from the tester directory
 function loadTesterEnv(): Record<string, string> {
   const testerDir = join(process.cwd(), '..', 'ai-visibility-tester');
@@ -71,7 +81,7 @@ export async function POST(request: NextRequest) {
     await writeFile(metadataPath, JSON.stringify(testRunMetadata, null, 2));
     console.log('Created test run metadata:', metadataPath);
 
-    const results = [];
+    const results: TestResult[] = [];
     const queriesPaths: (string | null)[] = [];
     const responsesPaths: (string | null)[] = [];
 
