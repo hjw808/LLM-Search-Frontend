@@ -13,6 +13,12 @@ import {
   Download,
 } from "lucide-react";
 
+interface Competitor {
+  name: string;
+  count: number;
+  queries: number[];
+}
+
 interface ProviderReport {
   provider: string;
   html_report_path: string;
@@ -20,7 +26,7 @@ interface ProviderReport {
   business_mentions: number;
   competitors_found: number;
   visibility_score: number;
-  top_competitors?: Array<{name: string; count: number}>;
+  top_competitors?: Competitor[];
 }
 
 interface TestResult {
@@ -34,7 +40,7 @@ interface TestResult {
   has_analysis: boolean;
   business_mentions?: number;
   competitors_found?: number;
-  top_competitors?: Array<{name: string; count: number}>;
+  top_competitors?: Competitor[];
   provider_reports: ProviderReport[];
 }
 
@@ -377,34 +383,53 @@ export default function ReportsPage() {
                 {currentReport.top_competitors.map((competitor, index) => {
                 const isExpanded = expandedCompetitor === competitor.name;
 
-                // Find all responses that mention this competitor
-                const mentioningResponses: Array<{query: string; response: string; provider: string}> = [];
-                Object.keys(aiResponses).forEach(provider => {
-                  aiResponses[provider]?.forEach(resp => {
-                    const responseText = resp['Response Text\r'] || resp['Response Text'] || '';
+                // Find all responses that mention this competitor using query IDs from backend
+                const mentioningResponses: Array<{query: string; response: string; provider: string; queryId: number}> = [];
 
-                    // Check if this response has the analyzed Competitors_Mentioned field
-                    const competitorsMentioned = resp['Competitors_Mentioned'];
-                    let isCompetitorMentioned = false;
+                if (competitor.queries && competitor.queries.length > 0) {
+                  // Use backend's query IDs for precise matching
+                  const queryIdsSet = new Set(competitor.queries);
 
-                    if (competitorsMentioned && competitorsMentioned !== 'None') {
-                      // Use backend's analysis - split by semicolon and check if competitor is in the list
-                      const competitors = competitorsMentioned.split(';').map((c: string) => c.trim().toLowerCase());
-                      isCompetitorMentioned = competitors.includes(competitor.name.toLowerCase());
-                    } else {
-                      // Fallback to substring search for responses without analysis
-                      isCompetitorMentioned = responseText.toLowerCase().includes(competitor.name.toLowerCase());
-                    }
+                  Object.keys(aiResponses).forEach(provider => {
+                    aiResponses[provider]?.forEach(resp => {
+                      const queryId = parseInt(resp['Query ID'] || '0');
 
-                    if (isCompetitorMentioned) {
-                      mentioningResponses.push({
-                        query: resp['Query Text'] || '',
-                        response: responseText,
-                        provider: provider
-                      });
-                    }
+                      if (queryIdsSet.has(queryId)) {
+                        const responseText = resp['Response Text\r'] || resp['Response Text'] || '';
+                        mentioningResponses.push({
+                          queryId: queryId,
+                          query: resp['Query Text'] || '',
+                          response: responseText,
+                          provider: provider
+                        });
+                      }
+                    });
                   });
-                });
+                } else {
+                  // Fallback for old reports without query tracking
+                  Object.keys(aiResponses).forEach(provider => {
+                    aiResponses[provider]?.forEach(resp => {
+                      const responseText = resp['Response Text\r'] || resp['Response Text'] || '';
+                      const competitorsMentioned = resp['Competitors_Mentioned'];
+                      let isCompetitorMentioned = false;
+
+                      if (competitorsMentioned && competitorsMentioned !== 'None') {
+                        const competitors = competitorsMentioned.split(',').map((c: string) => c.trim().toLowerCase());
+                        isCompetitorMentioned = competitors.includes(competitor.name.toLowerCase());
+                      }
+
+                      if (isCompetitorMentioned) {
+                        const queryId = parseInt(resp['Query ID'] || '0');
+                        mentioningResponses.push({
+                          queryId: queryId,
+                          query: resp['Query Text'] || '',
+                          response: responseText,
+                          provider: provider
+                        });
+                      }
+                    });
+                  });
+                }
 
                 return (
                   <div key={index} className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
@@ -414,7 +439,14 @@ export default function ReportsPage() {
                     >
                       <div className="flex items-center gap-3 flex-1">
                         <span className="text-sm font-medium text-slate-400 w-6">{index + 1}</span>
-                        <span className="font-medium text-white">{competitor.name}</span>
+                        <div className="flex flex-col gap-1">
+                          <span className="font-medium text-white">{competitor.name}</span>
+                          {competitor.queries && competitor.queries.length > 0 && (
+                            <span className="text-xs text-slate-500">
+                              Queries: {competitor.queries.sort((a, b) => a - b).join(', ')}
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="w-32 h-2 bg-white/5 rounded-full overflow-hidden">
