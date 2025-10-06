@@ -8,7 +8,6 @@ import {
   Pause,
   AlertCircle,
   CheckCircle,
-  Clock,
   Globe,
   Zap,
   RefreshCw,
@@ -17,7 +16,6 @@ import {
   Plus,
   X,
   Save,
-  BarChart3,
 } from "lucide-react";
 
 interface TestConfig {
@@ -211,7 +209,7 @@ export default function TestPage() {
         status: "completed",
         progress: 100,
         currentStep: "Test completed successfully",
-        results: data.results.map((r: any) => ({
+        results: data.results.map((r: { provider: string; totalQueries?: number; success: boolean; error?: string }) => ({
           provider: r.provider,
           queries: r.totalQueries || 0,
           completed: r.success,
@@ -223,7 +221,7 @@ export default function TestPage() {
       setTimeout(() => {
         window.location.href = '/reports';
       }, 2000);
-    } catch (error) {
+    } catch {
       setTestProgress({
         status: "error",
         progress: 0,
@@ -232,7 +230,8 @@ export default function TestPage() {
     }
   };
 
-  const simulateTestProgress = () => {
+  // Removed unused simulateTestProgress function
+  /* const simulateTestProgress = () => {
     const providers = config.providers;
     const totalSteps = providers.length * 2; // 2 query types per provider
     let currentStep = 0;
@@ -266,7 +265,7 @@ export default function TestPage() {
         });
       }
     }, 2000);
-  };
+  }; */
 
   const handleStopTest = () => {
     setTestProgress({
@@ -459,7 +458,7 @@ export default function TestPage() {
                 <label htmlFor="location-type" className="text-sm font-medium text-slate-300">Location Type</label>
                 <Select
                   value={businessConfig.locationType}
-                  onValueChange={(value: any) => setBusinessConfig({
+                  onValueChange={(value: string) => setBusinessConfig({
                     ...businessConfig,
                     locationType: value,
                     location: {} // Reset location when type changes

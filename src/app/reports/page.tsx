@@ -42,7 +42,7 @@ export default function ReportsPage() {
   const [reports, setReports] = useState<TestResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [aiResponses, setAiResponses] = useState<{[provider: string]: any[]}>({});
+  const [aiResponses, setAiResponses] = useState<{[provider: string]: Record<string, string>[]}>({});
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentQAIndex, setCurrentQAIndex] = useState<{[provider: string]: number}>({});
@@ -82,7 +82,7 @@ export default function ReportsPage() {
   };
 
   const loadReportResponses = async (report: TestResult) => {
-    const responses: {[provider: string]: any[]} = {};
+    const responses: {[provider: string]: Record<string, string>[]} = {};
 
     for (const providerReport of report.provider_reports) {
       try {

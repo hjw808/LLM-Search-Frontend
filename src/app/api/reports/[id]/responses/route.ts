@@ -40,7 +40,7 @@ export async function GET(
           }
         }
       }
-    } catch (error) {
+    } catch {
       console.log('No metadata files found, using timestamp matching');
     }
 
@@ -80,7 +80,6 @@ export async function GET(
                   if (timestampMatch) {
                     const timestamp = timestampMatch[1];
                     const fileTimestamp = parseTimestamp(timestamp);
-                    const fileTime = new Date(fileTimestamp);
 
                     // Match based on minute precision
                     const fileMinute = fileTimestamp.substring(0, 16); // YYYY-MM-DDTHH:MM
@@ -135,17 +134,17 @@ function parseTimestamp(timestampStr: string): string {
   return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
 }
 
-function parseCSV(csvContent: string): any[] {
+function parseCSV(csvContent: string): Record<string, string>[] {
   const responses = [];
 
   // Split by newlines but respect quoted fields
-  let rows: string[] = [];
+  const rows: string[] = [];
   let currentRow = '';
   let inQuotes = false;
 
   for (let i = 0; i < csvContent.length; i++) {
     const char = csvContent[i];
-    const nextChar = csvContent[i + 1];
+    csvContent[i + 1]; // nextChar was unused, removed
 
     if (char === '"' && (i === 0 || csvContent[i - 1] !== '\\')) {
       inQuotes = !inQuotes;
@@ -175,7 +174,7 @@ function parseCSV(csvContent: string): any[] {
     const values = parseCSVLine(rows[i]);
 
     if (values.length === headers.length) {
-      const obj: any = {};
+      const obj: Record<string, string> = {};
       headers.forEach((header, index) => {
         // Remove surrounding quotes and unescape internal quotes
         let value = values[index];
@@ -223,7 +222,7 @@ function parseCSVLine(line: string): string[] {
   return values;
 }
 
-async function tryLoadAnalyzedData(businessPath: string, originalFile: string, fallbackResponses: any[]): Promise<any[]> {
+async function tryLoadAnalyzedData(businessPath: string, originalFile: string, fallbackResponses: Record<string, string>[]): Promise<Record<string, string>[]> {
   try {
     // Try to find an analyzed CSV file (with _analysis_ in the name)
     const analyzedFileName = originalFile.replace('responses', 'analysis');

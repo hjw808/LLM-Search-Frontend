@@ -84,19 +84,3 @@ export async function DELETE(
     );
   }
 }
-
-function parseTimestamp(timestampStr: string): string {
-  // Convert 20251004_120104 to ISO format
-  const date = timestampStr.substring(0, 8);
-  const time = timestampStr.substring(9);
-
-  const year = date.substring(0, 4);
-  const month = date.substring(4, 6);
-  const day = date.substring(6, 8);
-
-  const hour = time.substring(0, 2);
-  const minute = time.substring(2, 4);
-  const second = time.substring(4, 6);
-
-  return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
-}

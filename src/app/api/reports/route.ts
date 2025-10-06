@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { readdir, readFile, stat } from 'fs/promises';
-import { join, parse } from 'path';
+import { join } from 'path';
 
 interface ProviderReport {
   provider: string;
@@ -192,17 +192,6 @@ export async function GET() {
   }
 }
 
-function parseFilename(filename: string): { provider: string; timestamp: string } | null {
-  // Expected format: openai_queries_Business_Name_20251004_120104.txt
-  const match = filename.match(/^(openai|claude)_queries_.*_(\d{8}_\d{6})\.txt$/);
-  if (match) {
-    const [, provider, timestampStr] = match;
-    const timestamp = parseTimestamp(timestampStr);
-    return { provider, timestamp };
-  }
-  return null;
-}
-
 function parseTimestamp(timestampStr: string): string {
   // Convert 20251004_120104 to ISO format
   const date = timestampStr.substring(0, 8);
@@ -217,21 +206,6 @@ function parseTimestamp(timestampStr: string): string {
   const second = time.substring(4, 6);
 
   return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
-}
-
-function extractQueryCount(content: string): number {
-  const lines = content.split('\n');
-  const totalLine = lines.find(line => line.startsWith('# Total queries:'));
-  if (totalLine) {
-    const match = totalLine.match(/# Total queries: (\d+)/);
-    if (match) {
-      return parseInt(match[1]);
-    }
-  }
-
-  // Count numbered queries as fallback
-  const queryLines = lines.filter(line => /^\d+\./.test(line.trim()));
-  return queryLines.length;
 }
 
 function extractAnalysisFromHTML(htmlContent: string): {

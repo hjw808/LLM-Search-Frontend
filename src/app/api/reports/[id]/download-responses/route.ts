@@ -37,7 +37,7 @@ export async function GET(
           }
         }
       }
-    } catch (error) {
+    } catch {
       console.log('No metadata files found');
     }
 
@@ -172,7 +172,7 @@ function parseTimestamp(timestampStr: string): string {
   return `${year}-${month}-${day}T${hour}:${minute}:${second}`;
 }
 
-function parseCSV(csvContent: string): any[] {
+function parseCSV(csvContent: string): Record<string, string>[] {
   const responses = [];
   const rows = csvContent.split('\n').filter(r => r.trim());
 
@@ -184,7 +184,7 @@ function parseCSV(csvContent: string): any[] {
     const values = parseCSVLine(rows[i]);
 
     if (values.length === headers.length) {
-      const obj: any = {};
+      const obj: Record<string, string> = {};
       headers.forEach((header, index) => {
         let value = values[index];
         if (value.startsWith('"') && value.endsWith('"')) {

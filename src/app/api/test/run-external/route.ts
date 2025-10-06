@@ -92,10 +92,10 @@ export async function POST(request: NextRequest) {
       { status: 408 }
     );
 
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error running test:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to run test' },
+      { error: error instanceof Error ? error.message : 'Failed to run test' },
       { status: 500 }
     );
   }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, readFile, mkdir } from 'fs/promises';
+import { writeFile, readFile } from 'fs/promises';
 import { join } from 'path';
 import yaml from 'js-yaml';
 
@@ -19,7 +19,7 @@ const CONFIG_PATH = join(process.cwd(), '..', 'ai-visibility-tester', 'config.ya
 export async function GET() {
   try {
     const configData = await readFile(CONFIG_PATH, 'utf-8');
-    const config = yaml.load(configData) as any;
+    const config = yaml.load(configData) as Record<string, unknown>;
 
     const businessConfig: BusinessConfig = {
       name: config.business_name || '',
