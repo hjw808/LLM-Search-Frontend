@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { readFile, readdir, stat } from 'fs/promises';
 import { join } from 'path';
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -11,6 +13,32 @@ export async function GET(
     const searchParams = request.nextUrl.searchParams;
     const format = searchParams.get('format') || 'csv'; // csv or json
 
+    // If backend URL is set, proxy to external backend (production mode)
+    if (BACKEND_URL) {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/reports/${reportId}/download-responses?format=${format}`);
+
+        if (!response.ok) {
+          throw new Error('Failed to download responses from backend');
+        }
+
+        const data = await response.blob();
+        return new NextResponse(data, {
+          headers: {
+            'Content-Type': format === 'json' ? 'application/json' : 'text/csv',
+            'Content-Disposition': `attachment; filename="responses_${reportId}.${format}"`,
+          },
+        });
+      } catch (error) {
+        console.error('Error downloading responses from backend:', error);
+        return NextResponse.json(
+          { error: 'Responses not found' },
+          { status: 404 }
+        );
+      }
+    }
+
+    // Local development mode - read from file system
     // Extract business name and timestamp from report ID
     const reportTimeParts = reportId.split('_');
     const reportTime = reportTimeParts[reportTimeParts.length - 1];

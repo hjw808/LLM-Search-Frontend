@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { readdir, unlink, stat } from 'fs/promises';
 import { join } from 'path';
 
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -9,6 +11,29 @@ export async function DELETE(
   try {
     const { id: reportId } = await params;
 
+    // If backend URL is set, proxy to external backend (production mode)
+    if (BACKEND_URL) {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/reports/${reportId}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to delete report from backend');
+        }
+
+        const result = await response.json();
+        return NextResponse.json(result);
+      } catch (error) {
+        console.error('Error deleting report from backend:', error);
+        return NextResponse.json(
+          { error: 'Failed to delete report' },
+          { status: 500 }
+        );
+      }
+    }
+
+    // Local development mode - delete from file system
     // Extract business name and timestamp from report ID
     // Format: BusinessName_2025-10-04T10:52:22
     const reportIdParts = reportId.split('_');
