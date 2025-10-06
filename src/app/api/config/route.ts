@@ -22,13 +22,13 @@ export async function GET() {
     const config = yaml.load(configData) as Record<string, unknown>;
 
     const businessConfig: BusinessConfig = {
-      name: config.business_name || '',
-      url: config.business_url || '',
-      location: config.business_location || 'Australia',
-      aliases: config.business_aliases || [],
+      name: (config.business_name as string) || '',
+      url: (config.business_url as string) || '',
+      location: (config.business_location as string) || 'Australia',
+      aliases: (config.business_aliases as string[]) || [],
       queries: {
-        consumer: config.num_consumer_queries || 10,
-        business: config.num_business_queries || 10
+        consumer: (config.num_consumer_queries as number) || 10,
+        business: (config.num_business_queries as number) || 10
       }
     };
 

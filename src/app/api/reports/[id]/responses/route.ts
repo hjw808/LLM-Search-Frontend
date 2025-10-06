@@ -144,7 +144,6 @@ function parseCSV(csvContent: string): Record<string, string>[] {
 
   for (let i = 0; i < csvContent.length; i++) {
     const char = csvContent[i];
-    csvContent[i + 1]; // nextChar was unused, removed
 
     if (char === '"' && (i === 0 || csvContent[i - 1] !== '\\')) {
       inQuotes = !inQuotes;
