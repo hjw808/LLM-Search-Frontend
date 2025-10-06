@@ -1,0 +1,21 @@
+{
+  "env": {
+    "NEXT_PUBLIC_BACKEND_URL": "https://web-production-15741.up.railway.app"
+  },
+  "build": {
+    "env": {
+      "NEXT_PUBLIC_BACKEND_URL": "https://web-production-15741.up.railway.app"
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, must-revalidate"
+        }
+      ]
+    }
+  ]
+}

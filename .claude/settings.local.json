@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/hjwil/OneDrive/Desktop/LLM SEO/ai-visibility-tester/scripts/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
