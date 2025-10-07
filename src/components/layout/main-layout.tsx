@@ -16,6 +16,7 @@ import {
 const navigation = [
   { name: "Run Test", href: "/test", icon: Play },
   { name: "Reports", href: "/reports", icon: FileText },
+  { name: "Deep Dive", href: "/deep-dive", icon: Sparkles },
 ];
 
 interface MainLayoutProps {
