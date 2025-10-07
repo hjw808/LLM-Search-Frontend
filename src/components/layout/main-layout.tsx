@@ -11,11 +11,15 @@ import {
   Zap,
   Menu,
   X,
+  CreditCard,
+  Settings,
 } from "lucide-react";
 
 const navigation = [
   { name: "Run Test", href: "/test", icon: Play },
   { name: "Reports", href: "/reports", icon: FileText },
+  { name: "Pricing", href: "/pricing", icon: CreditCard },
+  { name: "Account", href: "/account", icon: Settings },
 ];
 
 interface MainLayoutProps {
