@@ -4,6 +4,8 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search, Clock, CheckCircle, Copy, Check } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 interface DeepDiveRequest {
   id: string;
   businessName: string;
