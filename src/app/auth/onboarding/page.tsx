@@ -178,7 +178,7 @@ export default function OnboardingPage() {
 
         {/* Footer Text */}
         <p className="text-center text-xs text-slate-500 mt-6">
-          We'll use this information to personalize your experience
+          We&apos;ll use this information to personalize your experience
         </p>
       </div>
     </div>
