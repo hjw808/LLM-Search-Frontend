@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
-import { Search, Clock, CheckCircle, Copy, Check } from "lucide-react";
+import { Search, Clock, CheckCircle, Copy, Check, X } from "lucide-react";
 
 export const dynamic = 'force-dynamic';
 
@@ -26,12 +26,14 @@ interface DeepDiveRequest {
 function TrackPageContent() {
   const searchParams = useSearchParams();
   const urlId = searchParams.get("id");
+  const fromSubmit = searchParams.get("from") === "submit";
 
   const [trackingId, setTrackingId] = useState(urlId || "");
   const [request, setRequest] = useState<DeepDiveRequest | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copiedFields, setCopiedFields] = useState<Record<string, boolean>>({});
+  const [showSuccessBanner, setShowSuccessBanner] = useState(fromSubmit);
 
   const handleTrack = async (id?: string) => {
     const searchId = id || trackingId;
@@ -72,8 +74,15 @@ function TrackPageContent() {
     if (urlId) {
       handleTrack(urlId);
     }
+    // Auto-dismiss success banner after 5 seconds
+    if (showSuccessBanner) {
+      const timer = setTimeout(() => {
+        setShowSuccessBanner(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [urlId]);
+  }, [urlId, showSuccessBanner]);
 
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
@@ -85,6 +94,31 @@ function TrackPageContent() {
 
   return (
     <div className="space-y-6 md:space-y-8">
+      {/* Success Banner */}
+      {showSuccessBanner && urlId && (
+        <div className="backdrop-blur-xl bg-green-500/10 border border-green-500/20 rounded-xl p-4 animate-in fade-in slide-in-from-top duration-300">
+          <div className="flex items-start gap-3">
+            <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-green-400 font-semibold mb-1">Deep Dive Request Submitted Successfully!</p>
+              <p className="text-green-300 text-sm">
+                Your tracking ID is: <span className="font-mono font-bold">{urlId}</span>
+              </p>
+              <p className="text-green-300 text-xs mt-1">
+                Save this ID to check your results later. Results typically take 2-3 business days.
+              </p>
+            </div>
+            <button
+              onClick={() => setShowSuccessBanner(false)}
+              className="text-green-400 hover:text-green-300 transition-colors"
+              aria-label="Dismiss"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="text-center">
         <h1 className="text-3xl md:text-4xl font-bold text-white mb-3">
@@ -120,6 +154,22 @@ function TrackPageContent() {
           {error && (
             <p className="text-red-400 text-sm mt-3">{error}</p>
           )}
+
+          {/* Help Text */}
+          <div className="mt-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl space-y-2 text-sm">
+            <p className="flex items-start gap-2 text-blue-300">
+              <span className="text-base flex-shrink-0">💡</span>
+              <span>Your tracking ID was provided when you submitted your request (format: DD-1234567890)</span>
+            </p>
+            <p className="flex items-start gap-2 text-blue-300">
+              <span className="text-base flex-shrink-0">⏱️</span>
+              <span>Results typically take 2-3 business days to complete</span>
+            </p>
+            <p className="flex items-start gap-2 text-blue-300">
+              <span className="text-base flex-shrink-0">❓</span>
+              <span>Check your email for your tracking ID, or contact support if you need assistance</span>
+            </p>
+          </div>
         </div>
       </div>
 

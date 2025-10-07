@@ -77,8 +77,8 @@ export default function DeepDiveApplyPage() {
 
       const data = await response.json();
 
-      // Redirect to tracking page with the new ID
-      router.push(`/deep-dive/track?id=${data.request.id}`);
+      // Redirect to tracking page with the new ID and success flag
+      router.push(`/deep-dive/track?id=${data.request.id}&from=submit`);
     } catch (err) {
       console.error("Error submitting request:", err);
       setError("Failed to submit request. Please try again.");

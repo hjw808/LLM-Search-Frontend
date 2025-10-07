@@ -221,6 +221,13 @@ export default function ReportsPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <button
+            onClick={() => window.location.href = '/test'}
+            className="px-3 md:px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/50 transition-all flex items-center gap-2"
+          >
+            <RefreshCw className="w-4 h-4" />
+            <span className="hidden sm:inline">Run New Test</span>
+          </button>
+          <button
             onClick={loadReports}
             className="px-3 md:px-4 py-2 rounded-xl text-sm font-medium bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all flex items-center gap-2"
           >
@@ -232,7 +239,7 @@ export default function ReportsPage() {
             className="px-3 md:px-4 py-2 rounded-xl text-sm font-medium bg-blue-500/20 border border-blue-500/30 text-blue-400 hover:bg-blue-500/30 transition-all flex items-center gap-2"
           >
             <Download className="w-4 h-4" />
-            <span className="hidden sm:inline">Download CSV</span>
+            <span className="hidden sm:inline">Download All Responses</span>
           </button>
           {deleteConfirmId === currentReport.id ? (
             <div className="flex items-center gap-2">
@@ -322,7 +329,16 @@ export default function ReportsPage() {
               <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                 {currentReport.visibility_score}%
               </div>
-              <div className="text-xs md:text-sm text-slate-400">Visibility Score</div>
+              <div className="text-xs md:text-sm text-slate-400 flex items-center gap-1 justify-start sm:justify-end group relative">
+                <span>Visibility Score</span>
+                <div className="relative">
+                  <span className="text-blue-400 cursor-help">ℹ️</span>
+                  <div className="absolute bottom-full right-0 mb-2 w-64 p-3 bg-slate-900 border border-white/20 rounded-xl text-xs text-slate-300 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 shadow-xl">
+                    Your visibility score represents how often your business was mentioned in AI responses compared to total queries. Higher is better!
+                    <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white/20"></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

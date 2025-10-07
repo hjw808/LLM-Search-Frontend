@@ -201,7 +201,13 @@ export default function TestPage() {
   };
 
   const handleStartTest = async () => {
-    if (!businessConfig) {
+    // Validate business configuration
+    if (!businessConfig || !businessConfig.name || !businessConfig.url) {
+      setTestProgress({
+        status: "error",
+        progress: 0,
+        currentStep: "Please configure your business details first. Click 'Configure Business' above.",
+      });
       return;
     }
 
@@ -211,7 +217,11 @@ export default function TestPage() {
       const hasEmptyQueries = allQueries.some(q => !q.trim());
 
       if (hasEmptyQueries) {
-        alert("Please fill in all custom queries before starting the test.");
+        setTestProgress({
+          status: "error",
+          progress: 0,
+          currentStep: "Please fill in all custom queries before starting the test.",
+        });
         return;
       }
     }
@@ -750,9 +760,10 @@ export default function TestPage() {
                 <div className="flex items-center gap-3 mb-2">
                   <Sparkles className="w-5 h-5 text-blue-400" />
                   <span className="font-semibold text-white">AI-Generated Queries</span>
+                  <span className="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded-full font-medium">Recommended</span>
                 </div>
                 <p className="text-xs text-slate-400">
-                  Let AI automatically generate queries based on your business
+                  Let AI automatically generate queries based on your business (Best for most users)
                 </p>
               </button>
 
@@ -767,9 +778,10 @@ export default function TestPage() {
                 <div className="flex items-center gap-3 mb-2">
                   <FileText className="w-5 h-5 text-purple-400" />
                   <span className="font-semibold text-white">Write My Own Queries</span>
+                  <span className="text-xs px-2 py-0.5 bg-purple-500/20 text-purple-400 rounded-full font-medium">Advanced</span>
                 </div>
                 <p className="text-xs text-slate-400">
-                  Manually write specific queries to test
+                  Manually write specific queries to test (Use when you have specific questions in mind)
                 </p>
               </button>
             </div>

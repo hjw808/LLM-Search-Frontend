@@ -116,6 +116,19 @@ export default function AdminDeepDivePage() {
 
   return (
     <div className="space-y-6 md:space-y-8 px-4 md:px-0">
+      {/* Warning Banner */}
+      <div className="backdrop-blur-xl bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+        <div className="flex items-start gap-3">
+          <span className="text-2xl flex-shrink-0">⚠️</span>
+          <div>
+            <p className="text-red-400 font-semibold mb-1">ADMIN PORTAL - Authorized Personnel Only</p>
+            <p className="text-red-300 text-sm">
+              This portal is for internal use only. Unauthorized access or modifications are prohibited.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Header */}
       <div>
         <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
