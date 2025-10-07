@@ -8,6 +8,10 @@ interface TestRequest {
   queryTypes: string[];
   consumerQueries: number;
   businessQueries: number;
+  customQueries?: {
+    consumer: string[];
+    business: string[];
+  };
 }
 
 interface TestResult {
@@ -50,7 +54,7 @@ function loadTesterEnv(): Record<string, string> {
 
 export async function POST(request: NextRequest) {
   try {
-    const { providers, queryTypes, consumerQueries, businessQueries }: TestRequest = await request.json();
+    const { providers, queryTypes, consumerQueries, businessQueries, customQueries }: TestRequest = await request.json();
 
     if (!providers || providers.length === 0) {
       return NextResponse.json(
@@ -74,6 +78,7 @@ export async function POST(request: NextRequest) {
             query_types: queryTypes,
             consumer_queries: consumerQueries,
             business_queries: businessQueries,
+            ...(customQueries && { custom_queries: customQueries }),
           }),
         });
 
@@ -180,32 +185,83 @@ export async function POST(request: NextRequest) {
     const queriesPaths: (string | null)[] = [];
     const responsesPaths: (string | null)[] = [];
 
-    // Step 1: Generate queries for all providers
-    for (const provider of providers) {
+    // Step 1: Generate or save custom queries
+    let customQueriesPath: string | null = null;
+
+    if (customQueries) {
+      // Save custom queries to CSV file
       try {
-        const scriptPath = join(scriptsPath, `${provider}_script.py`);
+        const { readFile } = await import('fs/promises');
+        const configContent = await readFile(configPath, 'utf-8');
+        const configMatch = configContent.match(/business_name:\s*["']?([^"'\n]+)["']?/);
+        const businessName = configMatch ? configMatch[1].trim() : 'Unknown';
 
-        // Generate queries
-        const generateOutput = await runPythonScript(scriptPath, workingDir, configPath, 'generate');
-        const queriesPath = extractFilePath(generateOutput, 'Saved to:');
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').replace('T', '_').split('.')[0];
+        const csvFilename = `custom_queries_${businessName.replace(/\s+/g, '_')}_${timestamp}.csv`;
+        customQueriesPath = join(workingDir, 'results', businessName, csvFilename);
 
-        // Always push to maintain index alignment, even if null
-        queriesPaths.push(queriesPath || null);
-
-        results.push({
-          provider,
-          success: !!queriesPath,
-          queriesPath,
-          totalQueries: consumerQueries + businessQueries,
+        // Create CSV content
+        let csvContent = 'Query,Query_Type\n';
+        customQueries.consumer.forEach(query => {
+          csvContent += `"${query.replace(/"/g, '""')}",consumer\n`;
         });
+        customQueries.business.forEach(query => {
+          csvContent += `"${query.replace(/"/g, '""')}",business\n`;
+        });
+
+        // Ensure directory exists
+        const { mkdir } = await import('fs/promises');
+        const resultsDir = join(workingDir, 'results', businessName);
+        await mkdir(resultsDir, { recursive: true });
+
+        await writeFile(customQueriesPath, csvContent);
+        console.log('Saved custom queries to:', customQueriesPath);
+
+        // Use the same queries path for all providers
+        for (const provider of providers) {
+          queriesPaths.push(customQueriesPath);
+          results.push({
+            provider,
+            success: true,
+            queriesPath: customQueriesPath,
+            totalQueries: customQueries.consumer.length + customQueries.business.length,
+          });
+        }
       } catch (error) {
-        // Push null to maintain index alignment
-        queriesPaths.push(null);
-        results.push({
-          provider,
-          success: false,
-          error: error instanceof Error ? error.message : 'Unknown error',
-        });
+        console.error('Error saving custom queries:', error);
+        return NextResponse.json(
+          { error: 'Failed to save custom queries' },
+          { status: 500 }
+        );
+      }
+    } else {
+      // Generate queries for all providers (AI mode)
+      for (const provider of providers) {
+        try {
+          const scriptPath = join(scriptsPath, `${provider}_script.py`);
+
+          // Generate queries
+          const generateOutput = await runPythonScript(scriptPath, workingDir, configPath, 'generate');
+          const queriesPath = extractFilePath(generateOutput, 'Saved to:');
+
+          // Always push to maintain index alignment, even if null
+          queriesPaths.push(queriesPath || null);
+
+          results.push({
+            provider,
+            success: !!queriesPath,
+            queriesPath,
+            totalQueries: consumerQueries + businessQueries,
+          });
+        } catch (error) {
+          // Push null to maintain index alignment
+          queriesPaths.push(null);
+          results.push({
+            provider,
+            success: false,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          });
+        }
       }
     }
 

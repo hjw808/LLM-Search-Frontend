@@ -81,6 +81,16 @@ export default function TestPage() {
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [isProviderModalOpen, setIsProviderModalOpen] = useState(false);
 
+  // New state for query mode and custom queries
+  const [queryMode, setQueryMode] = useState<"ai" | "custom">("ai");
+  const [customQueries, setCustomQueries] = useState<{
+    consumer: string[];
+    business: string[];
+  }>({
+    consumer: [],
+    business: [],
+  });
+
   useEffect(() => {
     loadBusinessConfig();
   }, []);
@@ -91,6 +101,14 @@ export default function TestPage() {
       setIsConfigModalOpen(true);
     }
   }, [isConfigLoaded, businessConfig]);
+
+  // Initialize custom queries arrays when business config changes
+  useEffect(() => {
+    setCustomQueries({
+      consumer: Array(businessConfig.queries.consumer).fill(""),
+      business: Array(businessConfig.queries.business).fill(""),
+    });
+  }, [businessConfig.queries.consumer, businessConfig.queries.business]);
 
   const loadBusinessConfig = async () => {
     try {
@@ -185,6 +203,17 @@ export default function TestPage() {
       return;
     }
 
+    // Validate custom queries if in custom mode
+    if (queryMode === "custom") {
+      const allQueries = [...customQueries.consumer, ...customQueries.business];
+      const hasEmptyQueries = allQueries.some(q => !q.trim());
+
+      if (hasEmptyQueries) {
+        alert("Please fill in all custom queries before starting the test.");
+        return;
+      }
+    }
+
     setTestProgress({
       status: "running",
       progress: 50,
@@ -193,17 +222,25 @@ export default function TestPage() {
     });
 
     try {
+      const requestBody = {
+        providers: config.providers,
+        queryTypes: config.queryTypes,
+        consumerQueries: businessConfig.queries.consumer,
+        businessQueries: businessConfig.queries.business,
+        ...(queryMode === "custom" && {
+          customQueries: {
+            consumer: customQueries.consumer,
+            business: customQueries.business,
+          },
+        }),
+      };
+
       const response = await fetch('/api/test/run', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          providers: config.providers,
-          queryTypes: config.queryTypes,
-          consumerQueries: businessConfig.queries.consumer,
-          businessQueries: businessConfig.queries.business,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
@@ -696,6 +733,123 @@ export default function TestPage() {
           </p>
         </div>
         <div className="p-6 space-y-6">
+          {/* Query Mode Selection */}
+          <div>
+            <h4 className="text-sm font-semibold text-slate-300 mb-3">Query Mode</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                onClick={() => setQueryMode("ai")}
+                className={`p-4 rounded-xl border transition-all text-left ${
+                  queryMode === "ai"
+                    ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-blue-500/30"
+                    : "bg-white/5 border-white/10 hover:bg-white/10"
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <Sparkles className="w-5 h-5 text-blue-400" />
+                  <span className="font-semibold text-white">AI-Generated Queries</span>
+                </div>
+                <p className="text-xs text-slate-400">
+                  Let AI automatically generate queries based on your business
+                </p>
+              </button>
+
+              <button
+                onClick={() => setQueryMode("custom")}
+                className={`p-4 rounded-xl border transition-all text-left ${
+                  queryMode === "custom"
+                    ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 border-blue-500/30"
+                    : "bg-white/5 border-white/10 hover:bg-white/10"
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <FileText className="w-5 h-5 text-purple-400" />
+                  <span className="font-semibold text-white">Write My Own Queries</span>
+                </div>
+                <p className="text-xs text-slate-400">
+                  Manually write specific queries to test
+                </p>
+              </button>
+            </div>
+          </div>
+
+          {/* Custom Query Textareas */}
+          {queryMode === "custom" && (
+            <div className="space-y-4">
+              <div className="backdrop-blur-xl bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
+                <p className="text-sm text-blue-300">
+                  Write {businessConfig.queries.consumer} consumer queries and {businessConfig.queries.business} business queries below.
+                </p>
+              </div>
+
+              {/* Consumer Queries */}
+              {businessConfig.queries.consumer > 0 && (
+                <div>
+                  <h5 className="text-sm font-semibold text-slate-300 mb-3">
+                    Consumer Queries ({businessConfig.queries.consumer})
+                  </h5>
+                  <div className="space-y-3">
+                    {Array.from({ length: businessConfig.queries.consumer }).map((_, index) => (
+                      <div key={`consumer-${index}`}>
+                        <label htmlFor={`consumer-query-${index}`} className="text-xs text-slate-400 mb-1 block">
+                          Consumer Query {index + 1}
+                        </label>
+                        <textarea
+                          id={`consumer-query-${index}`}
+                          value={customQueries.consumer[index] || ""}
+                          onChange={(e) => {
+                            const newConsumerQueries = [...customQueries.consumer];
+                            newConsumerQueries[index] = e.target.value;
+                            setCustomQueries({
+                              ...customQueries,
+                              consumer: newConsumerQueries,
+                            });
+                          }}
+                          placeholder={`Enter consumer query ${index + 1}...`}
+                          rows={2}
+                          className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all resize-none"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Business Queries */}
+              {businessConfig.queries.business > 0 && (
+                <div>
+                  <h5 className="text-sm font-semibold text-slate-300 mb-3">
+                    Business Queries ({businessConfig.queries.business})
+                  </h5>
+                  <div className="space-y-3">
+                    {Array.from({ length: businessConfig.queries.business }).map((_, index) => (
+                      <div key={`business-${index}`}>
+                        <label htmlFor={`business-query-${index}`} className="text-xs text-slate-400 mb-1 block">
+                          Business Query {index + 1}
+                        </label>
+                        <textarea
+                          id={`business-query-${index}`}
+                          value={customQueries.business[index] || ""}
+                          onChange={(e) => {
+                            const newBusinessQueries = [...customQueries.business];
+                            newBusinessQueries[index] = e.target.value;
+                            setCustomQueries({
+                              ...customQueries,
+                              business: newBusinessQueries,
+                            });
+                          }}
+                          placeholder={`Enter business query ${index + 1}...`}
+                          rows={2}
+                          className="w-full px-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all resize-none"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Test Summary */}
           <div>
             <h4 className="text-sm font-semibold text-slate-300 mb-3">Test Configuration</h4>
