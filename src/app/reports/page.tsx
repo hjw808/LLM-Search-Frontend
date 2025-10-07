@@ -53,6 +53,7 @@ export default function ReportsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentQAIndex, setCurrentQAIndex] = useState<{[provider: string]: number}>({});
   const [expandedCompetitor, setExpandedCompetitor] = useState<string | null>(null);
+  const [expandedResponses, setExpandedResponses] = useState<{[key: string]: boolean}>({});
   const [competitorPageIndex, setCompetitorPageIndex] = useState<{[competitor: string]: number}>({});
   const [isCompetitorsExpanded, setIsCompetitorsExpanded] = useState(false);
   const [expandedProviders, setExpandedProviders] = useState<{[provider: string]: boolean}>({});
@@ -518,8 +519,13 @@ export default function ReportsPage() {
                         {(() => {
                           const currentIdx = competitorPageIndex[competitor.name] || 0;
                           const item = mentioningResponses[currentIdx];
+                          const responseKey = `competitor-${competitor.name}-${currentIdx}`;
+                          const isResponseExpanded = expandedResponses[responseKey];
+                          const responseLines = item.response.split('\n').filter(line => line.trim());
+                          const shouldShowReadMore = responseLines.length > 4;
+
                           return (
-                            <div className="bg-slate-900/50 border border-white/10 rounded-xl p-4">
+                            <div className="bg-slate-900/50 border border-white/10 rounded-xl p-3 md:p-4">
                               <div className="mb-3">
                                 <span className="text-xs font-semibold text-blue-400 uppercase">{item.provider}</span>
                               </div>
@@ -527,17 +533,28 @@ export default function ReportsPage() {
                                 <div className="text-xs font-bold text-blue-400 mb-2 flex items-center gap-2">
                                   <span className="text-base">❓</span> Question
                                 </div>
-                                <p className="text-sm text-white">{item.query}</p>
+                                <p className="text-xs md:text-sm text-white break-words">{item.query}</p>
                               </div>
                               <div className="bg-purple-500/10 border border-purple-500/20 p-3 rounded-lg">
                                 <div className="text-xs font-bold text-purple-400 mb-2 flex items-center gap-2">
                                   <span className="text-base">💡</span> AI Response
                                 </div>
-                                <div className="text-sm text-slate-300 whitespace-pre-wrap">
-                                  {item.response.split('\n').map((paragraph, pIdx) => (
-                                    paragraph.trim() ? <p key={pIdx} className="mb-2">{paragraph.trim()}</p> : null
+                                <div className={`text-xs md:text-sm text-slate-300 whitespace-pre-wrap break-words ${!isResponseExpanded && shouldShowReadMore ? 'line-clamp-4' : ''}`}>
+                                  {responseLines.map((paragraph, pIdx) => (
+                                    <p key={pIdx} className="mb-2">{paragraph}</p>
                                   ))}
                                 </div>
+                                {shouldShowReadMore && (
+                                  <button
+                                    onClick={() => setExpandedResponses({
+                                      ...expandedResponses,
+                                      [responseKey]: !isResponseExpanded
+                                    })}
+                                    className="mt-2 text-xs text-blue-400 hover:text-blue-300 font-medium"
+                                  >
+                                    {isResponseExpanded ? 'Show less' : 'Read more'}
+                                  </button>
+                                )}
                               </div>
                             </div>
                           );
@@ -599,78 +616,103 @@ export default function ReportsPage() {
           <div key={provider} className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
             <button
               onClick={() => setExpandedProviders({ ...expandedProviders, [provider]: !isExpanded })}
-              className="w-full p-6 hover:bg-white/5 transition-all text-left"
+              className="w-full p-4 md:p-6 hover:bg-white/5 transition-all text-left"
             >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Eye className="w-5 h-5 text-blue-400" />
-                    {provider.charAt(0).toUpperCase() + provider.slice(1)} AI Conversations
-                    <span className="text-sm font-normal text-slate-400">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg md:text-xl font-bold text-white flex flex-wrap items-center gap-2">
+                    <Eye className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                    <span className="break-words">{provider.charAt(0).toUpperCase() + provider.slice(1)} AI Conversations</span>
+                    <span className="text-xs md:text-sm font-normal text-slate-400 whitespace-nowrap">
                       ({totalResponses} {totalResponses === 1 ? 'query' : 'queries'})
                     </span>
                   </h3>
-                  <p className="text-sm text-slate-400 mt-1">
+                  <p className="text-xs md:text-sm text-slate-400 mt-1">
                     Click to {isExpanded ? 'hide' : 'view'} all conversations
                   </p>
                 </div>
-                <ChevronRight className={`w-6 h-6 text-slate-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                <ChevronRight className={`w-5 h-5 md:w-6 md:h-6 text-slate-400 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-90' : ''}`} />
               </div>
             </button>
             {isExpanded && (
               <div className="border-t border-white/10">
-                <div className="p-6 border-b border-white/10">
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm text-slate-400">
-                      Viewing {currentIdx + 1} of {totalResponses} query and response pairs
+                <div className="p-4 md:p-6 border-b border-white/10">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <p className="text-xs md:text-sm text-slate-400">
+                      Viewing {currentIdx + 1} of {totalResponses} {totalResponses === 1 ? 'pair' : 'pairs'}
                     </p>
                     <div className="flex items-center gap-2">
                       <button
                         onClick={goToPreviousQA}
                         disabled={currentIdx === 0}
-                        className={`px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+                        className={`px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 min-w-[44px] min-h-[44px] justify-center ${
                           currentIdx === 0
                             ? 'bg-white/5 text-slate-500 cursor-not-allowed'
                             : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'
                         }`}
+                        aria-label="Previous response"
                       >
                         <ChevronLeft className="w-4 h-4" />
                       </button>
                       <button
                         onClick={goToNextQA}
                         disabled={currentIdx === totalResponses - 1}
-                        className={`px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+                        className={`px-3 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 min-w-[44px] min-h-[44px] justify-center ${
                           currentIdx === totalResponses - 1
                             ? 'bg-white/5 text-slate-500 cursor-not-allowed'
                             : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'
                         }`}
+                        aria-label="Next response"
                       >
                         <ChevronRight className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
                 </div>
-                <div className="p-6">
-              <div className="bg-white/5 border border-white/10 rounded-xl p-4">
-                <div className="mb-4 bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl">
+                <div className="p-4 md:p-6">
+              <div className="bg-white/5 border border-white/10 rounded-xl p-3 md:p-4">
+                <div className="mb-4 bg-blue-500/10 border border-blue-500/20 p-3 md:p-4 rounded-xl">
                   <div className="text-xs font-bold text-blue-400 mb-2 flex items-center gap-2">
                     <span className="text-base">❓</span> Question
                   </div>
-                  <p className="text-sm font-medium text-white">{queryText.trim()}</p>
+                  <p className="text-xs md:text-sm font-medium text-white break-words">{queryText.trim()}</p>
                 </div>
-                <div className="bg-purple-500/10 border border-purple-500/20 p-4 rounded-xl">
+                <div className="bg-purple-500/10 border border-purple-500/20 p-3 md:p-4 rounded-xl">
                   <div className="text-xs font-bold text-purple-400 mb-2 flex items-center gap-2">
                     <span className="text-base">💡</span> AI Response
                   </div>
-                  <div className="text-sm text-slate-300 whitespace-pre-wrap">
-                    {responseText && responseText.trim() ? (
-                      responseText.trim().split('\n').map((paragraph, pIdx) => (
-                        paragraph.trim() ? <p key={pIdx} className="mb-2">{paragraph.trim()}</p> : null
-                      ))
-                    ) : (
-                      <p className="text-slate-500 italic">No response available</p>
-                    )}
-                  </div>
+                  {(() => {
+                    const providerResponseKey = `provider-${provider}-${currentIdx}`;
+                    const isProviderResponseExpanded = expandedResponses[providerResponseKey];
+                    const trimmedResponse = responseText?.trim() || '';
+                    const responseLines = trimmedResponse.split('\n').filter(line => line.trim());
+                    const shouldShowReadMore = responseLines.length > 4;
+
+                    return (
+                      <>
+                        <div className={`text-xs md:text-sm text-slate-300 whitespace-pre-wrap break-words ${!isProviderResponseExpanded && shouldShowReadMore ? 'line-clamp-4' : ''}`}>
+                          {trimmedResponse ? (
+                            responseLines.map((paragraph, pIdx) => (
+                              <p key={pIdx} className="mb-2">{paragraph}</p>
+                            ))
+                          ) : (
+                            <p className="text-slate-500 italic">No response available</p>
+                          )}
+                        </div>
+                        {shouldShowReadMore && (
+                          <button
+                            onClick={() => setExpandedResponses({
+                              ...expandedResponses,
+                              [providerResponseKey]: !isProviderResponseExpanded
+                            })}
+                            className="mt-2 text-xs text-blue-400 hover:text-blue-300 font-medium"
+                          >
+                            {isProviderResponseExpanded ? 'Show less' : 'Read more'}
+                          </button>
+                        )}
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
 
