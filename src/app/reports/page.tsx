@@ -209,42 +209,42 @@ export default function ReportsPage() {
   const currentReport = reports[currentIndex];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 px-4 md:px-0">
       {/* Header with Navigation */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 md:mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Test Report</h1>
-          <p className="text-slate-400">
+          <h1 className="text-xl md:text-2xl font-bold text-white">Test Report</h1>
+          <p className="text-sm md:text-base text-slate-400">
             Viewing report {currentIndex + 1} of {reports.length}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             onClick={loadReports}
-            className="px-4 py-2 rounded-xl text-sm font-medium bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all flex items-center gap-2"
+            className="px-3 md:px-4 py-2 rounded-xl text-sm font-medium bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all flex items-center gap-2"
           >
             <RefreshCw className="w-4 h-4" />
-            Refresh
+            <span className="hidden sm:inline">Refresh</span>
           </button>
           <button
             onClick={() => handleDownloadResponses(currentReport.id, 'csv')}
-            className="px-4 py-2 rounded-xl text-sm font-medium bg-blue-500/20 border border-blue-500/30 text-blue-400 hover:bg-blue-500/30 transition-all flex items-center gap-2"
+            className="px-3 md:px-4 py-2 rounded-xl text-sm font-medium bg-blue-500/20 border border-blue-500/30 text-blue-400 hover:bg-blue-500/30 transition-all flex items-center gap-2"
           >
             <Download className="w-4 h-4" />
-            Download CSV
+            <span className="hidden sm:inline">Download CSV</span>
           </button>
           {deleteConfirmId === currentReport.id ? (
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handleDeleteReport(currentReport.id)}
                 disabled={isDeleting}
-                className="px-4 py-2 rounded-xl text-sm font-medium bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 transition-all disabled:opacity-50"
+                className="px-3 md:px-4 py-2 rounded-xl text-sm font-medium bg-red-500/20 border border-red-500/30 text-red-400 hover:bg-red-500/30 transition-all disabled:opacity-50 whitespace-nowrap"
               >
-                Confirm Delete
+                Confirm
               </button>
               <button
                 onClick={() => setDeleteConfirmId(null)}
-                className="px-4 py-2 rounded-xl text-sm font-medium bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all"
+                className="px-3 md:px-4 py-2 rounded-xl text-sm font-medium bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all"
               >
                 Cancel
               </button>
@@ -252,38 +252,39 @@ export default function ReportsPage() {
           ) : (
             <button
               onClick={() => setDeleteConfirmId(currentReport.id)}
-              className="px-4 py-2 rounded-xl text-sm font-medium bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all flex items-center gap-2"
+              className="px-3 md:px-4 py-2 rounded-xl text-sm font-medium bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all flex items-center gap-2"
             >
               <Trash2 className="w-4 h-4" />
-              Delete
+              <span className="hidden sm:inline">Delete</span>
             </button>
           )}
         </div>
       </div>
 
       {/* Navigation Controls */}
-      <div className="flex items-center justify-between backdrop-blur-xl bg-white/5 border border-white/10 p-6 rounded-2xl">
+      <div className="flex items-center justify-between backdrop-blur-xl bg-white/5 border border-white/10 p-4 md:p-6 rounded-2xl">
         <button
           onClick={goToPrevious}
           disabled={currentIndex === 0}
-          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+          className={`px-3 md:px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 min-w-[44px] ${
             currentIndex === 0
               ? 'bg-white/5 text-slate-500 cursor-not-allowed'
               : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'
           }`}
         >
           <ChevronLeft className="w-4 h-4" />
-          Previous Report
+          <span className="hidden md:inline">Previous Report</span>
         </button>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2">
           {reports.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentIndex(index)}
               className={`w-2 h-2 rounded-full transition-all ${
-                index === currentIndex ? 'bg-blue-500 w-8' : 'bg-slate-500 hover:bg-slate-400'
+                index === currentIndex ? 'bg-blue-500 w-6 md:w-8' : 'bg-slate-500 hover:bg-slate-400'
               }`}
+              aria-label={`Go to report ${index + 1}`}
             />
           ))}
         </div>
@@ -291,62 +292,64 @@ export default function ReportsPage() {
         <button
           onClick={goToNext}
           disabled={currentIndex === reports.length - 1}
-          className={`px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 ${
+          className={`px-3 md:px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2 min-w-[44px] ${
             currentIndex === reports.length - 1
               ? 'bg-white/5 text-slate-500 cursor-not-allowed'
               : 'bg-white/5 border border-white/10 text-white hover:bg-white/10'
           }`}
         >
-          Next Report
+          <span className="hidden md:inline">Next Report</span>
           <ChevronRight className="w-4 h-4" />
         </button>
       </div>
 
       {/* Report Overview */}
       <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-        <div className="p-6 border-b border-white/10">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-white">{currentReport.business_name}</h2>
-              <p className="flex items-center gap-2 mt-2 text-slate-400">
-                <Calendar className="w-4 h-4" />
-                {new Date(currentReport.timestamp).toLocaleDateString()} at{" "}
-                {new Date(currentReport.timestamp).toLocaleTimeString()}
+        <div className="p-4 md:p-6 border-b border-white/10">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex-1">
+              <h2 className="text-xl md:text-2xl font-bold text-white break-words">{currentReport.business_name}</h2>
+              <p className="flex items-center gap-2 mt-2 text-sm md:text-base text-slate-400">
+                <Calendar className="w-4 h-4 flex-shrink-0" />
+                <span className="truncate">
+                  {new Date(currentReport.timestamp).toLocaleDateString()} at{" "}
+                  {new Date(currentReport.timestamp).toLocaleTimeString()}
+                </span>
               </p>
             </div>
-            <div className="text-right">
-              <div className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            <div className="text-left sm:text-right">
+              <div className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
                 {currentReport.visibility_score}%
               </div>
-              <div className="text-sm text-slate-400">Visibility Score</div>
+              <div className="text-xs md:text-sm text-slate-400">Visibility Score</div>
             </div>
           </div>
         </div>
-        <div className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-white/5 border border-white/10 rounded-xl">
-              <div className="text-2xl font-bold text-white">{currentReport.total_queries}</div>
-              <div className="text-sm text-slate-400">Total Queries</div>
+        <div className="p-4 md:p-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <div className="text-center p-3 md:p-4 bg-white/5 border border-white/10 rounded-xl">
+              <div className="text-xl md:text-2xl font-bold text-white">{currentReport.total_queries}</div>
+              <div className="text-xs md:text-sm text-slate-400">Total Queries</div>
             </div>
-            <div className="text-center p-4 bg-white/5 border border-white/10 rounded-xl">
-              <div className="text-2xl font-bold text-white">{currentReport.business_mentions || 0}</div>
-              <div className="text-sm text-slate-400">Business Mentions</div>
+            <div className="text-center p-3 md:p-4 bg-white/5 border border-white/10 rounded-xl">
+              <div className="text-xl md:text-2xl font-bold text-white">{currentReport.business_mentions || 0}</div>
+              <div className="text-xs md:text-sm text-slate-400">Business Mentions</div>
             </div>
-            <div className="text-center p-4 bg-white/5 border border-white/10 rounded-xl">
-              <div className="text-2xl font-bold text-white">{currentReport.competitors_found || 0}</div>
-              <div className="text-sm text-slate-400">Competitors Found</div>
+            <div className="text-center p-3 md:p-4 bg-white/5 border border-white/10 rounded-xl">
+              <div className="text-xl md:text-2xl font-bold text-white">{currentReport.competitors_found || 0}</div>
+              <div className="text-xs md:text-sm text-slate-400">Competitors Found</div>
             </div>
-            <div className="text-center p-4 bg-white/5 border border-white/10 rounded-xl">
-              <div className="text-2xl font-bold text-white">{currentReport.providers.length}</div>
-              <div className="text-sm text-slate-400">
+            <div className="text-center p-3 md:p-4 bg-white/5 border border-white/10 rounded-xl">
+              <div className="text-xl md:text-2xl font-bold text-white">{currentReport.providers.length}</div>
+              <div className="text-xs md:text-sm text-slate-400">
                 {currentReport.providers.length === 1 ? 'AI Provider' : 'AI Providers'}
               </div>
             </div>
           </div>
 
-          <div className="mt-4 flex gap-2">
+          <div className="mt-4 flex flex-wrap gap-2">
             {currentReport.providers.map((provider) => (
-              <span key={provider} className="px-3 py-1.5 bg-blue-500/20 border border-blue-500/30 text-blue-300 rounded-lg text-sm capitalize">
+              <span key={provider} className="px-3 py-1.5 bg-blue-500/20 border border-blue-500/30 text-blue-300 rounded-lg text-xs md:text-sm capitalize">
                 {provider}
               </span>
             ))}
@@ -359,26 +362,26 @@ export default function ReportsPage() {
         <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
           <button
             onClick={() => setIsCompetitorsExpanded(!isCompetitorsExpanded)}
-            className="w-full p-6 hover:bg-white/5 transition-all text-left"
+            className="w-full p-4 md:p-6 hover:bg-white/5 transition-all text-left"
           >
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-blue-400" />
-                  All Competitors Mentioned
-                  <span className="text-sm font-normal text-slate-400">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg md:text-xl font-bold text-white flex flex-wrap items-center gap-2">
+                  <TrendingUp className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                  <span className="break-words">All Competitors Mentioned</span>
+                  <span className="text-xs md:text-sm font-normal text-slate-400 whitespace-nowrap">
                     ({currentReport.top_competitors.length} total)
                   </span>
                 </h3>
-                <p className="text-sm text-slate-400 mt-1">
+                <p className="text-xs md:text-sm text-slate-400 mt-1">
                   Click to {isCompetitorsExpanded ? 'hide' : 'view'} all competitors
                 </p>
               </div>
-              <ChevronRight className={`w-6 h-6 text-slate-400 transition-transform ${isCompetitorsExpanded ? 'rotate-90' : ''}`} />
+              <ChevronRight className={`w-5 h-5 md:w-6 md:h-6 text-slate-400 transition-transform flex-shrink-0 ${isCompetitorsExpanded ? 'rotate-90' : ''}`} />
             </div>
           </button>
           {isCompetitorsExpanded && (
-            <div className="p-6 border-t border-white/10">
+            <div className="p-4 md:p-6 border-t border-white/10">
               <div className="space-y-3">
                 {currentReport.top_competitors.map((competitor, index) => {
                 const isExpanded = expandedCompetitor === competitor.name;
@@ -435,30 +438,30 @@ export default function ReportsPage() {
                   <div key={index} className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
                     <button
                       onClick={() => setExpandedCompetitor(isExpanded ? null : competitor.name)}
-                      className="w-full flex items-center justify-between p-3 hover:bg-white/5 transition-all"
+                      className="w-full flex flex-col sm:flex-row sm:items-center gap-3 p-3 hover:bg-white/5 transition-all"
                     >
-                      <div className="flex items-center gap-3 flex-1">
-                        <span className="text-sm font-medium text-slate-400 w-6">{index + 1}</span>
-                        <div className="flex flex-col gap-1">
-                          <span className="font-medium text-white">{competitor.name}</span>
+                      <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
+                        <span className="text-xs sm:text-sm font-medium text-slate-400 w-5 sm:w-6 flex-shrink-0 pt-1">{index + 1}</span>
+                        <div className="flex flex-col gap-1 flex-1 min-w-0">
+                          <span className="font-medium text-sm sm:text-base text-white break-words">{competitor.name}</span>
                           {competitor.queries && competitor.queries.length > 0 && (
-                            <span className="text-xs text-slate-500">
+                            <span className="text-xs text-slate-500 break-all">
                               Queries: {competitor.queries.sort((a, b) => a - b).join(', ')}
                             </span>
                           )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <div className="w-32 h-2 bg-white/5 rounded-full overflow-hidden">
+                      <div className="flex items-center gap-2 sm:gap-3 ml-7 sm:ml-0">
+                        <div className="w-24 sm:w-32 h-2 bg-white/5 rounded-full overflow-hidden flex-shrink-0">
                           <div
                             className="h-full bg-gradient-to-r from-blue-500 to-purple-600"
                             style={{ width: `${(competitor.count / currentReport.total_queries) * 100}%` }}
                           />
                         </div>
-                        <span className="text-sm text-slate-400 w-16 text-right">
+                        <span className="text-xs sm:text-sm text-slate-400 w-12 sm:w-16 text-right whitespace-nowrap">
                           {competitor.count} times
                         </span>
-                        <ChevronRight className={`w-5 h-5 text-slate-400 transition-transform ${isExpanded ? 'rotate-90' : ''}`} />
+                        <ChevronRight className={`w-4 h-4 sm:w-5 sm:h-5 text-slate-400 transition-transform flex-shrink-0 ${isExpanded ? 'rotate-90' : ''}`} />
                       </div>
                     </button>
 
