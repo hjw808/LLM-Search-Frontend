@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles, ArrowRight } from "lucide-react";
 
@@ -9,26 +9,40 @@ export default function OnboardingPage() {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
+    email: "",
     companyName: "",
     companyWebsite: "",
     jobTitle: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Pre-fill email from localStorage if available (from OAuth flow)
+  useEffect(() => {
+    const savedEmail = localStorage.getItem("tempEmail");
+    if (savedEmail) {
+      setFormData((prev) => ({ ...prev, email: savedEmail }));
+      localStorage.removeItem("tempEmail");
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate saving data (replace with actual API call later)
+    // Simulate saving data
     await new Promise((resolve) => setTimeout(resolve, 500));
 
-    // For now, just redirect to the main app
+    // Save user data to localStorage (will be read by UserContext)
+    localStorage.setItem("user", JSON.stringify(formData));
+
+    // Redirect to the main app
     router.push("/test");
   };
 
   const isFormValid =
     formData.firstName.trim() &&
     formData.lastName.trim() &&
+    formData.email.trim() &&
     formData.companyName.trim() &&
     formData.companyWebsite.trim() &&
     formData.jobTitle.trim();
@@ -106,6 +120,22 @@ export default function OnboardingPage() {
                 placeholder="Doe"
               />
             </div>
+          </div>
+
+          {/* Email */}
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
+              Email Address *
+            </label>
+            <input
+              id="email"
+              type="email"
+              required
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+              placeholder="john@acme.com"
+            />
           </div>
 
           {/* Company Name */}
