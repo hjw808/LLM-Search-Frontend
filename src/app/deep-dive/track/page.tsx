@@ -31,12 +31,6 @@ export default function DeepDiveTrackPage() {
   const [error, setError] = useState("");
   const [copiedFields, setCopiedFields] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
-    if (urlId) {
-      handleTrack(urlId);
-    }
-  }, [urlId]);
-
   const handleTrack = async (id?: string) => {
     const searchId = id || trackingId;
 
@@ -71,6 +65,13 @@ export default function DeepDiveTrackPage() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (urlId) {
+      handleTrack(urlId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlId]);
 
   const copyToClipboard = (text: string, field: string) => {
     navigator.clipboard.writeText(text);

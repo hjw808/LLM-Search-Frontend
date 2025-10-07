@@ -76,7 +76,7 @@ export default function DeepDivePage() {
       {/* What You Get */}
       <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-8 md:p-12">
         <h2 className="text-2xl md:text-3xl font-bold text-white mb-6 text-center">
-          What's Included in Your Deep Dive
+          What&apos;s Included in Your Deep Dive
         </h2>
         <div className="space-y-4 max-w-2xl mx-auto">
           <div className="flex items-start gap-4">
