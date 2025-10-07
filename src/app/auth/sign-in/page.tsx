@@ -6,13 +6,18 @@ import { Sparkles, Mail } from "lucide-react";
 
 export default function SignInPage() {
   const [showEmailForm, setShowEmailForm] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleEmailSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // For now, just redirect to /test
-    window.location.href = "/test";
+    // If signing up, go to onboarding. If signing in, go directly to app.
+    if (isSignUp) {
+      window.location.href = "/auth/onboarding";
+    } else {
+      window.location.href = "/test";
+    }
   };
 
   return (
@@ -51,7 +56,7 @@ export default function SignInPage() {
             <div className="space-y-3 mb-6">
               {/* Sign In with Google Button */}
               <Link
-                href="/test"
+                href="/auth/onboarding"
                 className="w-full px-6 py-3 bg-white hover:bg-gray-50 text-gray-800 font-semibold rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -77,7 +82,7 @@ export default function SignInPage() {
 
               {/* Sign In with Microsoft Button */}
               <Link
-                href="/test"
+                href="/auth/onboarding"
                 className="w-full px-6 py-3 bg-white hover:bg-gray-50 text-gray-800 font-semibold rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg"
               >
                 <svg className="w-5 h-5" viewBox="0 0 23 23">
@@ -99,17 +104,44 @@ export default function SignInPage() {
 
             {/* Email/Password Button */}
             <button
-              onClick={() => setShowEmailForm(true)}
+              onClick={() => {
+                setShowEmailForm(true);
+                setIsSignUp(false);
+              }}
               className="w-full px-6 py-3 bg-white/5 border border-white/10 text-white font-semibold rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-3"
             >
               <Mail className="w-5 h-5" />
               <span>Continue with Email</span>
             </button>
+
+            {/* Sign Up Link */}
+            <p className="text-center text-sm text-slate-400 mt-4">
+              Don&apos;t have an account?{" "}
+              <button
+                onClick={() => {
+                  setShowEmailForm(true);
+                  setIsSignUp(true);
+                }}
+                className="text-blue-400 hover:text-blue-300 font-semibold transition-colors"
+              >
+                Sign up
+              </button>
+            </p>
           </>
         ) : (
           <>
             {/* Email/Password Form */}
             <form onSubmit={handleEmailSubmit} className="space-y-4">
+              {/* Form Title */}
+              <div className="text-center mb-4">
+                <h2 className="text-xl font-bold text-white">
+                  {isSignUp ? "Create your account" : "Welcome back"}
+                </h2>
+                <p className="text-sm text-slate-400 mt-1">
+                  {isSignUp ? "Sign up to get started" : "Sign in to continue"}
+                </p>
+              </div>
+
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
                   Email Address
@@ -144,7 +176,7 @@ export default function SignInPage() {
                 type="submit"
                 className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-blue-500/50 transition-all"
               >
-                Sign In
+                {isSignUp ? "Sign Up" : "Sign In"}
               </button>
 
               <button
@@ -154,6 +186,18 @@ export default function SignInPage() {
               >
                 Back to other options
               </button>
+
+              {/* Toggle Sign In/Up */}
+              <p className="text-center text-sm text-slate-400 mt-2">
+                {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
+                <button
+                  type="button"
+                  onClick={() => setIsSignUp(!isSignUp)}
+                  className="text-blue-400 hover:text-blue-300 font-semibold transition-colors"
+                >
+                  {isSignUp ? "Sign in" : "Sign up"}
+                </button>
+              </p>
             </form>
           </>
         )}
