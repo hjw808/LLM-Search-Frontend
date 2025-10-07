@@ -153,9 +153,12 @@ export default function DeepDiveApplyPage() {
 
           {/* AI Engines */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-3">
-              Select AI Engines * (Choose at least one)
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Select AI Engines *
             </label>
+            <p className="text-xs text-slate-400 mb-3">
+              Choose which AI platforms to analyze. Queries will be run on each selected platform.
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {aiEngineOptions.map((engine) => {
                 const isSelected = formData.aiEngines.includes(engine.id);
@@ -183,8 +186,13 @@ export default function DeepDiveApplyPage() {
           {/* Query Count */}
           <div>
             <label htmlFor="queryCount" className="block text-sm font-medium text-slate-300 mb-2">
-              Number of Queries *
+              Total Number of Queries *
             </label>
+            <p className="text-xs text-slate-400 mb-3">
+              This is the total number of queries across ALL selected AI engines and query types.
+              <br />
+              Example: 100 queries = 100 total queries distributed across your selections.
+            </p>
             <input
               id="queryCount"
               type="number"
@@ -195,14 +203,17 @@ export default function DeepDiveApplyPage() {
               onChange={(e) => setFormData({ ...formData, queryCount: parseInt(e.target.value) })}
               className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
             />
-            <p className="text-xs text-slate-500 mt-2">Recommended: 50-100 queries for comprehensive analysis</p>
+            <p className="text-xs text-slate-500 mt-2">💡 Recommended: 50-100 queries for comprehensive analysis</p>
           </div>
 
           {/* Query Types */}
           <div>
-            <label className="block text-sm font-medium text-slate-300 mb-3">
-              Query Types * (Choose at least one)
+            <label className="block text-sm font-medium text-slate-300 mb-2">
+              Query Types *
             </label>
+            <p className="text-xs text-slate-400 mb-3">
+              Select which types of queries to include. Queries will be split across selected types.
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {["consumer", "business"].map((type) => {
                 const isSelected = formData.queryTypes.includes(type);
@@ -232,20 +243,26 @@ export default function DeepDiveApplyPage() {
             </div>
           </div>
 
-          {/* Additional Notes */}
-          <div>
-            <label htmlFor="notes" className="block text-sm font-medium text-slate-300 mb-2">
-              Additional Notes (Optional)
-            </label>
-            <textarea
-              id="notes"
-              rows={4}
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all resize-none"
-              placeholder="Any specific areas you'd like us to focus on?"
-            />
-          </div>
+          {/* Summary Box */}
+          {formData.aiEngines.length > 0 && formData.queryTypes.length > 0 && (
+            <div className="backdrop-blur-xl bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
+              <h3 className="text-sm font-semibold text-blue-300 mb-2">Your Request Summary:</h3>
+              <ul className="text-xs text-slate-300 space-y-1">
+                <li>
+                  <strong>{formData.queryCount} total queries</strong> across{" "}
+                  <strong>{formData.aiEngines.length} AI platform{formData.aiEngines.length > 1 ? "s" : ""}</strong>
+                </li>
+                <li>
+                  Query types: <strong>{formData.queryTypes.join(" & ")}</strong>
+                </li>
+                <li>
+                  AI Platforms: <strong>{formData.aiEngines.map(id =>
+                    aiEngineOptions.find(e => e.id === id)?.name.split(" ")[0]
+                  ).join(", ")}</strong>
+                </li>
+              </ul>
+            </div>
+          )}
 
           {/* Submit Button */}
           <button
