@@ -364,53 +364,56 @@ export default function TestPage() {
 
       {/* Business Configuration Modal */}
       {isConfigModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-          <div className="backdrop-blur-xl bg-slate-900 border border-white/10 rounded-2xl overflow-hidden max-w-4xl w-full max-h-[90vh] overflow-y-auto my-8">
-            <div className="p-6 border-b border-white/10">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Building2 className="w-5 h-5 text-blue-400" />
-                    Business Configuration
+        <div className="fixed inset-0 z-50 flex items-start justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
+          <div className="backdrop-blur-xl bg-slate-900 border-0 sm:border border-white/10 sm:rounded-2xl overflow-hidden max-w-4xl w-full min-h-screen sm:min-h-0 sm:max-h-[90vh] flex flex-col sm:my-8">
+            {/* Sticky Header */}
+            <div className="sticky top-0 z-10 backdrop-blur-xl bg-slate-900/95 border-b border-white/10 p-4 md:p-6">
+              <div className="flex items-start sm:items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                    <Building2 className="w-5 h-5 text-blue-400 flex-shrink-0" />
+                    <span className="break-words">Business Configuration</span>
                   </h3>
-                  <p className="text-sm text-slate-400 mt-1">
+                  <p className="text-xs md:text-sm text-slate-400 mt-1">
                     Configure your business details for AI visibility testing
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-shrink-0">
                   <button
                     onClick={handleSaveConfig}
                     disabled={saveStatus === "saving"}
-                    className={`px-4 py-2 rounded-xl font-medium text-sm transition-all duration-200 ${
+                    className={`px-3 md:px-4 py-2 rounded-xl font-medium text-xs md:text-sm transition-all duration-200 min-w-[44px] min-h-[44px] flex items-center justify-center gap-2 ${
                       saveStatus === "saved"
                         ? "bg-green-500/20 text-green-400 border border-green-500/30"
                         : "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/50"
                     }`}
                   >
                     {saveStatus === "saving" ? (
-                      <>Saving...</>
+                      <span className="hidden sm:inline">Saving...</span>
                     ) : saveStatus === "saved" ? (
-                      <span className="flex items-center gap-2">
+                      <>
                         <CheckCircle className="w-4 h-4" />
-                        Saved
-                      </span>
+                        <span className="hidden sm:inline">Saved</span>
+                      </>
                     ) : (
-                      <span className="flex items-center gap-2">
+                      <>
                         <Save className="w-4 h-4" />
-                        Save
-                      </span>
+                        <span className="hidden sm:inline">Save</span>
+                      </>
                     )}
                   </button>
                   <button
                     onClick={() => setIsConfigModalOpen(false)}
-                    className="px-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+                    className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+                    aria-label="Close modal"
                   >
                     <X className="w-5 h-5" />
                   </button>
                 </div>
               </div>
             </div>
-            <div className="p-6 space-y-4">
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4">
               {saveStatus === "error" && (
                 <div className="backdrop-blur-xl bg-red-500/10 border border-red-500/20 rounded-xl p-4">
                   <div className="flex items-start gap-3">
@@ -601,28 +604,31 @@ export default function TestPage() {
 
       {/* Provider Selection Modal */}
       {isProviderModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="backdrop-blur-xl bg-slate-900 border border-white/10 rounded-2xl overflow-hidden max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-white/10">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Zap className="w-5 h-5 text-purple-400" />
-                    Provider Selection
+        <div className="fixed inset-0 z-50 flex items-start justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
+          <div className="backdrop-blur-xl bg-slate-900 border-0 sm:border border-white/10 sm:rounded-2xl overflow-hidden max-w-4xl w-full min-h-screen sm:min-h-0 sm:max-h-[90vh] flex flex-col sm:my-8">
+            {/* Sticky Header */}
+            <div className="sticky top-0 z-10 backdrop-blur-xl bg-slate-900/95 border-b border-white/10 p-4 md:p-6">
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                    <span className="break-words">Provider Selection</span>
                   </h3>
-                  <p className="text-sm text-slate-400 mt-1">
+                  <p className="text-xs md:text-sm text-slate-400 mt-1">
                     Select which AI providers to use for testing
                   </p>
                 </div>
                 <button
                   onClick={() => setIsProviderModalOpen(false)}
-                  className="px-3 py-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+                  className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center flex-shrink-0"
+                  aria-label="Close modal"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
             </div>
-            <div className="p-6">
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-4 md:p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {["openai", "claude", "gemini", "copilot"].map((provider) => {
                   const isEnabled = config.providers.includes(provider);
