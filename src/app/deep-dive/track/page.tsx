@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { Search, Clock, CheckCircle, Copy, Check } from "lucide-react";
 
@@ -21,7 +21,7 @@ interface DeepDiveRequest {
   completedAt?: string;
 }
 
-export default function DeepDiveTrackPage() {
+function TrackPageContent() {
   const searchParams = useSearchParams();
   const urlId = searchParams.get("id");
 
@@ -252,5 +252,20 @@ export default function DeepDiveTrackPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function DeepDiveTrackPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-slate-400">Loading...</p>
+        </div>
+      </div>
+    }>
+      <TrackPageContent />
+    </Suspense>
   );
 }
