@@ -3,11 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 import {
   FileText,
   Play,
   Sparkles,
   Zap,
+  Menu,
+  X,
 } from "lucide-react";
 
 const navigation = [
@@ -21,11 +24,23 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   const pathname = usePathname();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <div className="w-72 backdrop-blur-xl bg-white/5 border-r border-white/10">
+      <div className={cn(
+        "fixed lg:relative inset-y-0 left-0 z-50 w-72 backdrop-blur-xl bg-white/5 border-r border-white/10 transform transition-transform duration-300 ease-in-out",
+        isSidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      )}>
         <div className="p-8">
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -90,19 +105,26 @@ export function MainLayout({ children }: MainLayoutProps) {
       {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <header className="backdrop-blur-xl bg-white/5 border-b border-white/10 px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-bold text-white">
+        <header className="backdrop-blur-xl bg-white/5 border-b border-white/10 px-4 md:px-8 py-4 md:py-6">
+          <div className="flex items-center justify-between gap-4">
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="lg:hidden p-2 rounded-xl text-white hover:bg-white/5 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label="Toggle menu"
+            >
+              {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+            <div className="flex-1 min-w-0">
+              <h2 className="text-lg md:text-2xl font-bold text-white truncate">
                 {navigation.find((item) => item.href === pathname)?.name || "AI Visibility Testing"}
               </h2>
-              <p className="text-sm text-slate-400 mt-1">Analyze your business visibility across AI platforms</p>
+              <p className="text-xs md:text-sm text-slate-400 mt-1 truncate">Analyze your business visibility across AI platforms</p>
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto p-8">
+        <main className="flex-1 overflow-auto p-4 md:p-8">
           <div className="max-w-7xl mx-auto">
             {children}
           </div>

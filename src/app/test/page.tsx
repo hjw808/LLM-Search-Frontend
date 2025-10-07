@@ -316,54 +316,56 @@ export default function TestPage() {
   const hasEnabledProviders = config.providers.length > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 px-4 md:px-0">
       {/* Business Configuration and Provider Selection Buttons */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {/* Business Configuration Button */}
-        <div className="flex items-center justify-between backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6">
-          <div>
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-blue-400" />
-              Business: <span className="text-blue-400">{businessConfig.name || "Not configured"}</span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6 gap-4">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base md:text-lg font-bold text-white flex flex-wrap items-center gap-2">
+              <Building2 className="w-5 h-5 text-blue-400 flex-shrink-0" />
+              <span className="break-words">Business:</span>
+              <span className="text-blue-400 break-words">{businessConfig.name || "Not configured"}</span>
             </h3>
-            <p className="text-sm text-slate-400 mt-1">
+            <p className="text-xs md:text-sm text-slate-400 mt-1">
               Click to configure your business details
             </p>
           </div>
           <button
             onClick={() => setIsConfigModalOpen(true)}
-            className="px-6 py-3 rounded-xl font-medium text-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/50 transition-all flex items-center gap-2"
+            className="px-4 md:px-6 py-2 md:py-3 rounded-xl font-medium text-xs md:text-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/50 transition-all flex items-center justify-center gap-2 whitespace-nowrap min-w-[44px]"
           >
             <Settings className="w-4 h-4" />
-            Configure Business
+            <span className="hidden sm:inline">Configure Business</span>
           </button>
         </div>
 
         {/* Provider Selection Button */}
-        <div className="flex items-center justify-between backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6">
-          <div>
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Zap className="w-5 h-5 text-purple-400" />
-              AI Providers: <span className="text-purple-400">{config.providers.length > 0 ? `${config.providers.length} selected` : "None selected"}</span>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-4 md:p-6 gap-4">
+          <div className="flex-1 min-w-0">
+            <h3 className="text-base md:text-lg font-bold text-white flex flex-wrap items-center gap-2">
+              <Zap className="w-5 h-5 text-purple-400 flex-shrink-0" />
+              <span className="break-words">AI Providers:</span>
+              <span className="text-purple-400 break-words">{config.providers.length > 0 ? `${config.providers.length} selected` : "None selected"}</span>
             </h3>
-            <p className="text-sm text-slate-400 mt-1">
+            <p className="text-xs md:text-sm text-slate-400 mt-1 break-words">
               {config.providers.length > 0 ? config.providers.map(p => p.charAt(0).toUpperCase() + p.slice(1)).join(", ") : "Click to select AI providers for testing"}
             </p>
           </div>
           <button
             onClick={() => setIsProviderModalOpen(true)}
-            className="px-6 py-3 rounded-xl font-medium text-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/50 transition-all flex items-center gap-2"
+            className="px-4 md:px-6 py-2 md:py-3 rounded-xl font-medium text-xs md:text-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/50 transition-all flex items-center justify-center gap-2 whitespace-nowrap min-w-[44px]"
           >
             <Settings className="w-4 h-4" />
-            Configure Providers
+            <span className="hidden sm:inline">Configure Providers</span>
           </button>
         </div>
       </div>
 
       {/* Business Configuration Modal */}
       {isConfigModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="backdrop-blur-xl bg-slate-900 border border-white/10 rounded-2xl overflow-hidden max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
+          <div className="backdrop-blur-xl bg-slate-900 border border-white/10 rounded-2xl overflow-hidden max-w-4xl w-full max-h-[90vh] overflow-y-auto my-8">
             <div className="p-6 border-b border-white/10">
               <div className="flex items-center justify-between">
                 <div>
@@ -550,9 +552,9 @@ export default function TestPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label htmlFor="consumer-queries" className="text-sm font-medium text-slate-300">Consumer Queries</label>
+                  <label htmlFor="consumer-queries" className="text-xs md:text-sm font-medium text-slate-300">Consumer Queries</label>
                   <input
                     id="consumer-queries"
                     type="number"
