@@ -16,6 +16,8 @@ import {
   Plus,
   X,
   Save,
+  Sparkles,
+  FileText,
 } from "lucide-react";
 
 interface TestConfig {
