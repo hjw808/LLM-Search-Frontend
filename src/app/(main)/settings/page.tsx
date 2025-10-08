@@ -25,16 +25,26 @@ export default function SettingsPage() {
 
   const handleSaveProfile = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    updateUser(profileData);
-    setIsSaving(false);
+    try {
+      await updateUser(profileData);
+    } catch (error) {
+      console.error("Failed to save profile:", error);
+      alert("Failed to save changes. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleSaveCompany = async () => {
     setIsSaving(true);
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    updateUser(companyData);
-    setIsSaving(false);
+    try {
+      await updateUser(companyData);
+    } catch (error) {
+      console.error("Failed to save company:", error);
+      alert("Failed to save changes. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const tabs = [

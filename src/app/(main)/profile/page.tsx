@@ -20,11 +20,15 @@ export default function ProfilePage() {
 
   const handleSave = async () => {
     setIsSaving(true);
-    // Simulate saving
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    updateUser(formData);
-    setIsSaving(false);
-    setIsEditing(false);
+    try {
+      await updateUser(formData);
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Failed to save:", error);
+      alert("Failed to save changes. Please try again.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {

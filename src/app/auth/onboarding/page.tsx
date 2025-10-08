@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles, ArrowRight } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function OnboardingPage() {
   const router = useRouter();
+  const supabase = createClient();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -15,28 +17,53 @@ export default function OnboardingPage() {
     jobTitle: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Pre-fill email from localStorage if available (from OAuth flow)
+  // Pre-fill email from current user
   useEffect(() => {
-    const savedEmail = localStorage.getItem("tempEmail");
-    if (savedEmail) {
-      setFormData((prev) => ({ ...prev, email: savedEmail }));
-      localStorage.removeItem("tempEmail");
-    }
-  }, []);
+    const loadUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.email) {
+        setFormData((prev) => ({ ...prev, email: user.email! }));
+      }
+    };
+    loadUser();
+  }, [supabase]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setError(null);
 
-    // Simulate saving data
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
 
-    // Save user data to localStorage (will be read by UserContext)
-    localStorage.setItem("user", JSON.stringify(formData));
+      if (!user) {
+        throw new Error("No authenticated user found");
+      }
 
-    // Redirect to the main app
-    router.push("/test");
+      // Update user profile in Supabase
+      const { error: updateError } = await supabase
+        .from("users")
+        .update({
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          company_name: formData.companyName,
+          company_website: formData.companyWebsite,
+          job_title: formData.jobTitle,
+        })
+        .eq("id", user.id);
+
+      if (updateError) throw updateError;
+
+      // Redirect to the main app
+      router.push("/test");
+    } catch (err: any) {
+      console.error("Onboarding error:", err);
+      setError(err.message || "Failed to save profile");
+      setIsSubmitting(false);
+    }
   };
 
   const isFormValid =
@@ -185,6 +212,13 @@ export default function OnboardingPage() {
               placeholder="Marketing Manager"
             />
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+              {error}
+            </div>
+          )}
 
           {/* Submit Button */}
           <button
