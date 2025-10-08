@@ -59,9 +59,9 @@ export default function OnboardingPage() {
 
       // Redirect to the main app
       router.push("/test");
-    } catch (err: any) {
+    } catch (err) {
       console.error("Onboarding error:", err);
-      setError(err.message || "Failed to save profile");
+      setError(err instanceof Error ? err.message : "Failed to save profile");
       setIsSubmitting(false);
     }
   };

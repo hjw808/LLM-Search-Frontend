@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useUser } from "@/contexts/user-context";
-import { User, Building2, Globe, Briefcase, Mail, Save, CheckCircle } from "lucide-react";
+import { User, Building2, Globe, Briefcase, Mail, Save } from "lucide-react";
 import Link from "next/link";
 
 export default function ProfilePage() {

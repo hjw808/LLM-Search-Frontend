@@ -50,8 +50,8 @@ export default function SignInPage() {
         // Redirect to app
         router.push("/test");
       }
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -70,8 +70,8 @@ export default function SignInPage() {
       });
 
       if (error) throw error;
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
       setLoading(false);
     }
   };
@@ -89,8 +89,8 @@ export default function SignInPage() {
       });
 
       if (error) throw error;
-    } catch (err: any) {
-      setError(err.message || "An error occurred");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
       setLoading(false);
     }
   };
