@@ -1,22 +1,97 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Sparkles, Mail } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function SignInPage() {
+  const router = useRouter();
+  const supabase = createClient();
+
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleEmailSubmit = (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // If signing up, go to onboarding. If signing in, go directly to app.
-    if (isSignUp) {
-      window.location.href = "/auth/onboarding";
-    } else {
-      window.location.href = "/test";
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (isSignUp) {
+        // Sign up with Supabase
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+          },
+        });
+
+        if (error) throw error;
+
+        if (data.user) {
+          // Redirect to onboarding to collect additional info
+          router.push("/auth/onboarding");
+        }
+      } else {
+        // Sign in with Supabase
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
+        // Redirect to app
+        router.push("/test");
+      }
+    } catch (err: any) {
+      setError(err.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) throw error;
+    } catch (err: any) {
+      setError(err.message || "An error occurred");
+      setLoading(false);
+    }
+  };
+
+  const handleMicrosoftSignIn = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "azure",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+
+      if (error) throw error;
+    } catch (err: any) {
+      setError(err.message || "An error occurred");
+      setLoading(false);
     }
   };
 
@@ -52,12 +127,20 @@ export default function SignInPage() {
 
         {!showEmailForm ? (
           <>
+            {/* Error Message */}
+            {error && (
+              <div className="mb-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+                {error}
+              </div>
+            )}
+
             {/* OAuth Buttons */}
             <div className="space-y-3 mb-6">
               {/* Sign In with Google Button */}
-              <Link
-                href="/auth/onboarding"
-                className="w-full px-6 py-3 bg-white hover:bg-gray-50 text-gray-800 font-semibold rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg"
+              <button
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+                className="w-full px-6 py-3 bg-white hover:bg-gray-50 text-gray-800 font-semibold rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
@@ -78,12 +161,13 @@ export default function SignInPage() {
                   />
                 </svg>
                 <span>Continue with Google</span>
-              </Link>
+              </button>
 
               {/* Sign In with Microsoft Button */}
-              <Link
-                href="/auth/onboarding"
-                className="w-full px-6 py-3 bg-white hover:bg-gray-50 text-gray-800 font-semibold rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg"
+              <button
+                onClick={handleMicrosoftSignIn}
+                disabled={loading}
+                className="w-full px-6 py-3 bg-white hover:bg-gray-50 text-gray-800 font-semibold rounded-xl transition-all flex items-center justify-center gap-3 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="w-5 h-5" viewBox="0 0 23 23">
                   <path fill="#f35325" d="M0 0h11v11H0z" />
@@ -92,7 +176,7 @@ export default function SignInPage() {
                   <path fill="#ffba08" d="M12 12h11v11H12z" />
                 </svg>
                 <span>Continue with Microsoft</span>
-              </Link>
+              </button>
             </div>
 
             {/* Divider */}
@@ -172,11 +256,26 @@ export default function SignInPage() {
                 />
               </div>
 
+              {/* Error Message */}
+              {error && (
+                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
+                  {error}
+                </div>
+              )}
+
               <button
                 type="submit"
-                className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-blue-500/50 transition-all"
+                disabled={loading}
+                className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-blue-500/50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {isSignUp ? "Sign Up" : "Sign In"}
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    <span>{isSignUp ? "Creating account..." : "Signing in..."}</span>
+                  </>
+                ) : (
+                  <span>{isSignUp ? "Sign Up" : "Sign In"}</span>
+                )}
               </button>
 
               <button
