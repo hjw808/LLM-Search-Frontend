@@ -36,25 +36,20 @@ export default function SignUpPage() {
 
     setIsLoading(true);
 
-    try {
-      const result = await signUp({
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phone: formData.phone,
-        company: formData.company,
-        password: formData.password,
-      });
+    const result = await signUp({
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      phone: formData.phone,
+      company: formData.company,
+      password: formData.password,
+    });
 
-      if (result?.error) {
-        setError(result.error);
-        setIsLoading(false);
-      }
-      // If successful, the signUp function will redirect to /test
-    } catch (err) {
-      setError("An unexpected error occurred");
+    if (result?.error) {
+      setError(result.error);
       setIsLoading(false);
     }
+    // If successful, the signUp function will redirect to /test (redirect throws to interrupt execution)
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

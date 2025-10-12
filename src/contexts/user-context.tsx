@@ -26,9 +26,10 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const supabase = createClient();
 
   useEffect(() => {
+    const supabase = createClient();
+
     // Get initial session
     const getUser = async () => {
       console.log("UserContext: Fetching user...");
@@ -53,6 +54,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
         if (profile) {
           setUser(profile);
+        } else if (error) {
+          console.error("UserContext: Error fetching profile:", error);
         }
       }
 
@@ -82,6 +85,8 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
         if (profile) {
           setUser(profile);
+        } else if (error) {
+          console.error("UserContext: Error fetching profile after auth change:", error);
         }
       } else {
         setUser(null);
@@ -94,7 +99,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, []); // Empty dependency array - only run once on mount
 
   return (
     <UserContext.Provider value={{ user, isLoading, supabaseUser }}>

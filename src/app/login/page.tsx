@@ -19,21 +19,16 @@ export default function LoginPage() {
     setError("");
     setIsLoading(true);
 
-    try {
-      const result = await signIn({
-        email: formData.email,
-        password: formData.password,
-      });
+    const result = await signIn({
+      email: formData.email,
+      password: formData.password,
+    });
 
-      if (result?.error) {
-        setError(result.error);
-        setIsLoading(false);
-      }
-      // If successful, the signIn function will redirect to /test
-    } catch (err) {
-      setError("An unexpected error occurred");
+    if (result?.error) {
+      setError(result.error);
       setIsLoading(false);
     }
+    // If successful, the signIn function will redirect to /test (redirect throws to interrupt execution)
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
