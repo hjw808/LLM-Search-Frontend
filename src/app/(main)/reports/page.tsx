@@ -12,6 +12,7 @@ import {
   Eye,
   Download,
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Competitor {
   name: string;
@@ -178,11 +179,50 @@ export default function ReportsPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-slate-400">Loading reports...</p>
+      <div className="space-y-4 md:space-y-6 px-4 md:px-0">
+        {/* Header Skeleton */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 md:mb-6">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-24" />
+            <Skeleton className="h-10 w-40" />
+          </div>
         </div>
+
+        {/* Navigation Skeleton */}
+        <Skeleton className="h-20 w-full" />
+
+        {/* Report Overview Skeleton */}
+        <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+          <div className="p-4 md:p-6 border-b border-white/10">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-8 w-64" />
+                <Skeleton className="h-4 w-48" />
+              </div>
+              <Skeleton className="h-12 w-24" />
+            </div>
+          </div>
+          <div className="p-4 md:p-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+              <Skeleton className="h-24 w-full" />
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Skeleton className="h-8 w-20" />
+              <Skeleton className="h-8 w-24" />
+            </div>
+          </div>
+        </div>
+
+        {/* AI Conversations Skeleton */}
+        <Skeleton className="h-96 w-full" />
       </div>
     );
   }
@@ -225,6 +265,7 @@ export default function ReportsPage() {
             className="px-3 md:px-4 py-2 rounded-xl text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/50 transition-all flex items-center gap-2"
           >
             <RefreshCw className="w-4 h-4" />
+            <span className="sm:hidden">New</span>
             <span className="hidden sm:inline">Run New Test</span>
           </button>
           <button
@@ -232,13 +273,14 @@ export default function ReportsPage() {
             className="px-3 md:px-4 py-2 rounded-xl text-sm font-medium bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all flex items-center gap-2"
           >
             <RefreshCw className="w-4 h-4" />
-            <span className="hidden sm:inline">Refresh</span>
+            <span className="sr-only sm:not-sr-only sm:inline">Refresh</span>
           </button>
           <button
             onClick={() => handleDownloadResponses(currentReport.id, 'csv')}
             className="px-3 md:px-4 py-2 rounded-xl text-sm font-medium bg-blue-500/20 border border-blue-500/30 text-blue-400 hover:bg-blue-500/30 transition-all flex items-center gap-2"
           >
             <Download className="w-4 h-4" />
+            <span className="sm:hidden">CSV</span>
             <span className="hidden sm:inline">Download All Responses</span>
           </button>
           {deleteConfirmId === currentReport.id ? (
@@ -263,7 +305,7 @@ export default function ReportsPage() {
               className="px-3 md:px-4 py-2 rounded-xl text-sm font-medium bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all flex items-center gap-2"
             >
               <Trash2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Delete</span>
+              <span className="sr-only sm:not-sr-only sm:inline">Delete</span>
             </button>
           )}
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import {
@@ -12,12 +12,7 @@ import {
   Menu,
   X,
   Package,
-  User,
-  Settings,
-  LogOut,
-  ChevronDown,
 } from "lucide-react";
-import { useUser } from "@/contexts/user-context";
 
 const navigation = [
   { name: "Run Test", href: "/test", icon: Play },
@@ -32,20 +27,7 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   const pathname = usePathname();
-  const router = useRouter();
-  const { user, clearUser } = useUser();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
-
-  const handleSignOut = () => {
-    clearUser();
-    router.push("/auth/sign-in");
-  };
-
-  const getInitials = () => {
-    if (!user) return "U";
-    return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase();
-  };
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -86,6 +68,7 @@ export function MainLayout({ children }: MainLayoutProps) {
                 <li key={item.name}>
                   <Link
                     href={item.href}
+                    onClick={() => setIsSidebarOpen(false)}
                     className={cn(
                       "group flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-200",
                       isActive
@@ -141,65 +124,6 @@ export function MainLayout({ children }: MainLayoutProps) {
               </h2>
               <p className="text-xs md:text-sm text-slate-400 mt-1 truncate">Analyze your business visibility across AI platforms</p>
             </div>
-
-            {/* User Profile Dropdown */}
-            {user && (
-              <div className="relative">
-                <button
-                  onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all"
-                >
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-sm">
-                    {getInitials()}
-                  </div>
-                  <span className="hidden md:block text-sm text-white font-medium">{user.firstName}</span>
-                  <ChevronDown className={cn("w-4 h-4 text-slate-400 transition-transform", isProfileDropdownOpen && "rotate-180")} />
-                </button>
-
-                {/* Dropdown Menu */}
-                {isProfileDropdownOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-[60]"
-                      onClick={() => setIsProfileDropdownOpen(false)}
-                    />
-                    <div className="absolute right-0 mt-2 w-56 backdrop-blur-xl bg-slate-900 border border-white/10 rounded-xl shadow-xl overflow-hidden z-[70]">
-                      <div className="p-3 border-b border-white/10">
-                        <p className="text-sm font-semibold text-white">{user.firstName} {user.lastName}</p>
-                        <p className="text-xs text-slate-400 truncate">{user.email}</p>
-                      </div>
-                      <div className="py-1">
-                        <Link
-                          href="/profile"
-                          onClick={() => setIsProfileDropdownOpen(false)}
-                          className="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-white/10 transition-all"
-                        >
-                          <User className="w-4 h-4" />
-                          View Profile
-                        </Link>
-                        <Link
-                          href="/settings"
-                          onClick={() => setIsProfileDropdownOpen(false)}
-                          className="flex items-center gap-3 px-3 py-2 text-sm text-slate-300 hover:bg-white/10 transition-all"
-                        >
-                          <Settings className="w-4 h-4" />
-                          Account Settings
-                        </Link>
-                      </div>
-                      <div className="border-t border-white/10 py-1">
-                        <button
-                          onClick={handleSignOut}
-                          className="w-full flex items-center gap-3 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 transition-all"
-                        >
-                          <LogOut className="w-4 h-4" />
-                          Sign Out
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
           </div>
         </header>
 

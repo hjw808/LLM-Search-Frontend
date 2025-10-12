@@ -19,6 +19,7 @@ import {
   Sparkles,
   FileText,
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface TestConfig {
   providers: string[];
@@ -352,10 +353,37 @@ export default function TestPage() {
 
   if (!isConfigLoaded) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-4"></div>
-          <p className="text-slate-400">Loading configuration...</p>
+      <div className="space-y-4 md:space-y-6 px-4 md:px-0">
+        {/* Configuration Cards Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+
+        {/* Test Execution Skeleton */}
+        <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
+          <div className="p-6 border-b border-white/10">
+            <Skeleton className="h-6 w-48 mb-2" />
+            <Skeleton className="h-4 w-64" />
+          </div>
+          <div className="p-6 space-y-6">
+            <div className="space-y-3">
+              <Skeleton className="h-5 w-32" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <Skeleton className="h-24 w-full" />
+                <Skeleton className="h-24 w-full" />
+              </div>
+            </div>
+            <div className="space-y-3">
+              <Skeleton className="h-5 w-40" />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+                <Skeleton className="h-20 w-full" />
+              </div>
+            </div>
+            <Skeleton className="h-12 w-32" />
+          </div>
         </div>
       </div>
     );
@@ -385,6 +413,7 @@ export default function TestPage() {
             className="px-4 md:px-6 py-2 md:py-3 rounded-xl font-medium text-xs md:text-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/50 transition-all flex items-center justify-center gap-2 whitespace-nowrap min-w-[44px]"
           >
             <Settings className="w-4 h-4" />
+            <span className="sm:hidden">Config</span>
             <span className="hidden sm:inline">Configure Business</span>
           </button>
         </div>
@@ -406,6 +435,7 @@ export default function TestPage() {
             className="px-4 md:px-6 py-2 md:py-3 rounded-xl font-medium text-xs md:text-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/50 transition-all flex items-center justify-center gap-2 whitespace-nowrap min-w-[44px]"
           >
             <Settings className="w-4 h-4" />
+            <span className="sm:hidden">Select</span>
             <span className="hidden sm:inline">Configure Providers</span>
           </button>
         </div>
@@ -414,7 +444,7 @@ export default function TestPage() {
       {/* Business Configuration Modal */}
       {isConfigModalOpen && (
         <div className="fixed inset-0 z-50 flex items-start justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-          <div className="backdrop-blur-xl bg-slate-900 border-0 sm:border border-white/10 sm:rounded-2xl overflow-hidden max-w-4xl w-full min-h-screen sm:min-h-0 sm:max-h-[90vh] flex flex-col sm:my-8">
+          <div className="backdrop-blur-xl bg-slate-900 border-0 sm:border border-white/10 sm:rounded-2xl overflow-hidden max-w-4xl w-full h-screen sm:h-auto sm:max-h-[90vh] flex flex-col">
             {/* Sticky Header */}
             <div className="sticky top-0 z-10 backdrop-blur-xl bg-slate-900/95 border-b border-white/10 p-4 md:p-6">
               <div className="flex items-start sm:items-center justify-between gap-4">
@@ -654,7 +684,7 @@ export default function TestPage() {
       {/* Provider Selection Modal */}
       {isProviderModalOpen && (
         <div className="fixed inset-0 z-50 flex items-start justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-sm overflow-y-auto">
-          <div className="backdrop-blur-xl bg-slate-900 border-0 sm:border border-white/10 sm:rounded-2xl overflow-hidden max-w-4xl w-full min-h-screen sm:min-h-0 sm:max-h-[90vh] flex flex-col sm:my-8">
+          <div className="backdrop-blur-xl bg-slate-900 border-0 sm:border border-white/10 sm:rounded-2xl overflow-hidden max-w-4xl w-full h-screen sm:h-auto sm:max-h-[90vh] flex flex-col">
             {/* Sticky Header */}
             <div className="sticky top-0 z-10 backdrop-blur-xl bg-slate-900/95 border-b border-white/10 p-4 md:p-6">
               <div className="flex items-center justify-between gap-4">
