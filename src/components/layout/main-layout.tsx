@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FileText,
   Play,
@@ -13,6 +13,7 @@ import {
   X,
   Package,
 } from "lucide-react";
+import { PageTransition } from "./page-transition";
 
 const navigation = [
   { name: "Run Test", href: "/test", icon: Play },
@@ -28,6 +29,14 @@ interface MainLayoutProps {
 export function MainLayout({ children }: MainLayoutProps) {
   const pathname = usePathname();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  // Scroll to top on route change
+  useEffect(() => {
+    const mainElement = document.querySelector('main');
+    if (mainElement) {
+      mainElement.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [pathname]);
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -70,14 +79,14 @@ export function MainLayout({ children }: MainLayoutProps) {
                     href={item.href}
                     onClick={() => setIsSidebarOpen(false)}
                     className={cn(
-                      "group flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-200",
+                      "group flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-150",
                       isActive
                         ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white border border-white/20 shadow-lg shadow-blue-500/20"
                         : "text-slate-400 hover:text-white hover:bg-white/5"
                     )}
                   >
                     <div className={cn(
-                      "p-2 rounded-lg transition-all duration-200",
+                      "p-2 rounded-lg transition-all duration-150",
                       isActive
                         ? "bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-blue-500/50"
                         : "bg-white/5 group-hover:bg-white/10"
@@ -119,18 +128,18 @@ export function MainLayout({ children }: MainLayoutProps) {
               {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg md:text-2xl font-bold text-white truncate">
+              <h2 className="text-lg md:text-2xl font-bold text-white truncate transition-opacity duration-150">
                 {navigation.find((item) => item.href === pathname)?.name || "AI Visibility Testing"}
               </h2>
-              <p className="text-xs md:text-sm text-slate-400 mt-1 truncate">Analyze your business visibility across AI platforms</p>
+              <p className="text-xs md:text-sm text-slate-400 mt-1 truncate transition-opacity duration-150">Analyze your business visibility across AI platforms</p>
             </div>
           </div>
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 overflow-auto p-4 md:p-8">
+        <main className="flex-1 overflow-auto p-4 md:p-8 scroll-smooth">
           <div className="max-w-7xl mx-auto">
-            {children}
+            <PageTransition>{children}</PageTransition>
           </div>
         </main>
       </div>
