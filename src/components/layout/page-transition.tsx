@@ -5,31 +5,33 @@ import { useEffect, useState } from "react";
 
 interface PageTransitionProps {
   children: React.ReactNode;
+  isTransitioning: boolean;
 }
 
-export function PageTransition({ children }: PageTransitionProps) {
+export function PageTransition({ children, isTransitioning }: PageTransitionProps) {
   const pathname = usePathname();
-  const [isVisible, setIsVisible] = useState(true);
+  const [displayChildren, setDisplayChildren] = useState(children);
 
   useEffect(() => {
-    // Fade out
-    setIsVisible(false);
+    if (isTransitioning) {
+      // Delay updating children until fade-out completes
+      const timer = setTimeout(() => {
+        setDisplayChildren(children);
+      }, 100);
 
-    // Fade in after a brief delay
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, 150);
-
-    return () => clearTimeout(timer);
-  }, [pathname]);
+      return () => clearTimeout(timer);
+    } else {
+      setDisplayChildren(children);
+    }
+  }, [pathname, children, isTransitioning]);
 
   return (
     <div
-      className={`transition-opacity duration-150 ease-in-out ${
-        isVisible ? "opacity-100" : "opacity-0"
+      className={`transition-opacity duration-100 ease-in-out ${
+        isTransitioning ? "opacity-0" : "opacity-100"
       }`}
     >
-      {children}
+      {displayChildren}
     </div>
   );
 }

@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   FileText,
   Play,
@@ -28,7 +28,10 @@ interface MainLayoutProps {
 
 export function MainLayout({ children }: MainLayoutProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
 
   // Scroll to top on route change
   useEffect(() => {
@@ -37,6 +40,39 @@ export function MainLayout({ children }: MainLayoutProps) {
       mainElement.scrollTo({ top: 0, behavior: 'instant' });
     }
   }, [pathname]);
+
+  // Reset transition state when pathname changes
+  useEffect(() => {
+    if (isTransitioning) {
+      const timer = setTimeout(() => {
+        setIsTransitioning(false);
+        setPendingPath(null);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [pathname, isTransitioning]);
+
+  // Coordinated navigation handler
+  const handleNavigation = useCallback((href: string, e: React.MouseEvent) => {
+    e.preventDefault();
+
+    // Don't navigate if already on this page
+    if (pathname === href) return;
+
+    // Close sidebar on mobile
+    setIsSidebarOpen(false);
+
+    // Set pending state immediately for visual feedback
+    setPendingPath(href);
+
+    // Start content fade-out immediately
+    setIsTransitioning(true);
+
+    // Navigate after a brief delay to allow fade-out to start
+    setTimeout(() => {
+      router.push(href);
+    }, 50);
+  }, [pathname, router]);
 
   return (
     <div className="flex h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
@@ -73,21 +109,26 @@ export function MainLayout({ children }: MainLayoutProps) {
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
+              const isPending = pendingPath === item.href;
+              const shouldHighlight = isActive || (isPending && isTransitioning);
+              const isPressed = isPending && !isActive;
+
               return (
                 <li key={item.name}>
                   <Link
                     href={item.href}
-                    onClick={() => setIsSidebarOpen(false)}
+                    onClick={(e) => handleNavigation(item.href, e)}
                     className={cn(
-                      "group flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-150",
-                      isActive
+                      "group flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-medium transition-all duration-100 ease-out",
+                      shouldHighlight
                         ? "bg-gradient-to-r from-blue-500/20 to-purple-500/20 text-white border border-white/20 shadow-lg shadow-blue-500/20"
-                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                        : "text-slate-400 hover:text-white hover:bg-white/5",
+                      isPressed && "scale-[0.98]"
                     )}
                   >
                     <div className={cn(
-                      "p-2 rounded-lg transition-all duration-150",
-                      isActive
+                      "p-2 rounded-lg transition-all duration-100 ease-out",
+                      shouldHighlight
                         ? "bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-blue-500/50"
                         : "bg-white/5 group-hover:bg-white/10"
                     )}>
@@ -128,10 +169,18 @@ export function MainLayout({ children }: MainLayoutProps) {
               {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
             <div className="flex-1 min-w-0">
-              <h2 className="text-lg md:text-2xl font-bold text-white truncate transition-opacity duration-150">
+              <h2 className={cn(
+                "text-lg md:text-2xl font-bold text-white truncate transition-opacity duration-100 ease-in-out",
+                isTransitioning && "opacity-50"
+              )}>
                 {navigation.find((item) => item.href === pathname)?.name || "AI Visibility Testing"}
               </h2>
-              <p className="text-xs md:text-sm text-slate-400 mt-1 truncate transition-opacity duration-150">Analyze your business visibility across AI platforms</p>
+              <p className={cn(
+                "text-xs md:text-sm text-slate-400 mt-1 truncate transition-opacity duration-100 ease-in-out",
+                isTransitioning && "opacity-50"
+              )}>
+                Analyze your business visibility across AI platforms
+              </p>
             </div>
           </div>
         </header>
@@ -139,7 +188,9 @@ export function MainLayout({ children }: MainLayoutProps) {
         {/* Page Content */}
         <main className="flex-1 overflow-auto p-4 md:p-8 scroll-smooth">
           <div className="max-w-7xl mx-auto">
-            <PageTransition>{children}</PageTransition>
+            <PageTransition isTransitioning={isTransitioning}>
+              {children}
+            </PageTransition>
           </div>
         </main>
       </div>
