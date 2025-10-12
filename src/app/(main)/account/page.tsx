@@ -7,13 +7,18 @@ import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AccountPage() {
-  const { user, isLoading } = useUser();
+  const { user, isLoading, supabaseUser } = useUser();
   const [isSigningOut, setIsSigningOut] = useState(false);
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
     await signOut();
   };
+
+  // Debug logging
+  console.log("Account Page - isLoading:", isLoading);
+  console.log("Account Page - user:", user);
+  console.log("Account Page - supabaseUser:", supabaseUser);
 
   if (isLoading) {
     return (
@@ -29,8 +34,16 @@ export default function AccountPage() {
 
   if (!user) {
     return (
-      <div className="text-center py-12">
-        <p className="text-slate-400">No user data available</p>
+      <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 text-center">
+        <p className="text-slate-400 mb-4">No user data available</p>
+        {supabaseUser && (
+          <div className="text-left">
+            <p className="text-sm text-slate-500 mb-2">Debug Info:</p>
+            <p className="text-sm text-slate-400">Auth User ID: {supabaseUser.id}</p>
+            <p className="text-sm text-slate-400">Email: {supabaseUser.email}</p>
+            <p className="text-sm text-red-400 mt-2">Profile data not found in users table</p>
+          </div>
+        )}
       </div>
     );
   }

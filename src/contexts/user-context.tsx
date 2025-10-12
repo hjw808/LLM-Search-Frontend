@@ -31,19 +31,25 @@ export function UserProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // Get initial session
     const getUser = async () => {
+      console.log("UserContext: Fetching user...");
       const {
         data: { user: authUser },
       } = await supabase.auth.getUser();
+
+      console.log("UserContext: Auth user:", authUser);
 
       if (authUser) {
         setSupabaseUser(authUser);
 
         // Fetch user profile from our custom table
-        const { data: profile } = await supabase
+        const { data: profile, error } = await supabase
           .from("users")
           .select("*")
           .eq("id", authUser.id)
           .single();
+
+        console.log("UserContext: Profile data:", profile);
+        console.log("UserContext: Profile error:", error);
 
         if (profile) {
           setUser(profile);
@@ -59,15 +65,20 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("UserContext: Auth state changed -", event, session?.user?.email);
+
       if (session?.user) {
         setSupabaseUser(session.user);
 
         // Fetch user profile
-        const { data: profile } = await supabase
+        const { data: profile, error } = await supabase
           .from("users")
           .select("*")
           .eq("id", session.user.id)
           .single();
+
+        console.log("UserContext: Profile after auth change:", profile);
+        console.log("UserContext: Profile error after auth change:", error);
 
         if (profile) {
           setUser(profile);
