@@ -21,10 +21,19 @@ export interface SignInData {
 export async function signUp(data: SignUpData) {
   const supabase = await createClient();
 
-  // Create the auth user
+  // Create the auth user with metadata
+  // The database trigger will automatically create the user profile
   const { data: authData, error: authError } = await supabase.auth.signUp({
     email: data.email,
     password: data.password,
+    options: {
+      data: {
+        first_name: data.firstName,
+        last_name: data.lastName,
+        phone: data.phone,
+        company: data.company,
+      },
+    },
   });
 
   if (authError) {
@@ -35,20 +44,9 @@ export async function signUp(data: SignUpData) {
     return { error: "Failed to create user" };
   }
 
-  // Create the user profile in our custom table
-  const { error: profileError } = await supabase.from("users").insert({
-    id: authData.user.id,
-    email: data.email,
-    first_name: data.firstName,
-    last_name: data.lastName,
-    phone: data.phone,
-    company: data.company,
-  });
-
-  if (profileError) {
-    return { error: profileError.message };
-  }
-
+  // The user profile is automatically created by the database trigger
+  // If email confirmation is disabled, redirect immediately
+  // If email confirmation is enabled, the user will see a confirmation message
   revalidatePath("/", "layout");
   redirect("/test");
 }
