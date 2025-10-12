@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   Package,
+  User,
 } from "lucide-react";
 import { PageTransition } from "./page-transition";
 
@@ -20,6 +21,7 @@ const navigation = [
   { name: "Reports", href: "/reports", icon: FileText },
   { name: "Deep Dive", href: "/deep-dive", icon: Sparkles },
   { name: "Products", href: "/products", icon: Package },
+  { name: "Account", href: "/account", icon: User },
 ];
 
 interface MainLayoutProps {

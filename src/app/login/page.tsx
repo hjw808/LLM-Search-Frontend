@@ -96,7 +96,7 @@ export default function LoginPage() {
 
                 {/* Sign Up Button */}
                 <Link
-                  href="/test"
+                  href="/sign-up"
                   className="block w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-blue-500/50 transition-all text-center flex items-center justify-center gap-2 group"
                 >
                   Sign Up
