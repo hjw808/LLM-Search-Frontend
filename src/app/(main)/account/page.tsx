@@ -32,18 +32,21 @@ export default function AccountPage() {
     );
   }
 
-  if (!user) {
+  // Fallback to user_metadata if profile not loaded from database
+  const displayUser = user || (supabaseUser ? {
+    id: supabaseUser.id,
+    email: supabaseUser.email!,
+    first_name: supabaseUser.user_metadata?.first_name || '',
+    last_name: supabaseUser.user_metadata?.last_name || '',
+    phone: supabaseUser.user_metadata?.phone || '',
+    company: supabaseUser.user_metadata?.company || '',
+    created_at: supabaseUser.created_at,
+  } : null);
+
+  if (!displayUser) {
     return (
       <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 text-center">
         <p className="text-slate-400 mb-4">No user data available</p>
-        {supabaseUser && (
-          <div className="text-left">
-            <p className="text-sm text-slate-500 mb-2">Debug Info:</p>
-            <p className="text-sm text-slate-400">Auth User ID: {supabaseUser.id}</p>
-            <p className="text-sm text-slate-400">Email: {supabaseUser.email}</p>
-            <p className="text-sm text-red-400 mt-2">Profile data not found in users table</p>
-          </div>
-        )}
       </div>
     );
   }
@@ -65,9 +68,9 @@ export default function AccountPage() {
             {/* User Info */}
             <div>
               <h1 className="text-3xl font-bold text-white mb-1">
-                {user.first_name} {user.last_name}
+                {displayUser.first_name} {displayUser.last_name}
               </h1>
-              <p className="text-slate-400">{user.email}</p>
+              <p className="text-slate-400">{displayUser.email}</p>
             </div>
           </div>
 
@@ -112,7 +115,7 @@ export default function AccountPage() {
               </label>
               <div className="flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl">
                 <User className="w-5 h-5 text-blue-400" />
-                <span className="text-white">{user.first_name}</span>
+                <span className="text-white">{displayUser.first_name}</span>
               </div>
             </div>
 
@@ -123,7 +126,7 @@ export default function AccountPage() {
               </label>
               <div className="flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl">
                 <User className="w-5 h-5 text-blue-400" />
-                <span className="text-white">{user.last_name}</span>
+                <span className="text-white">{displayUser.last_name}</span>
               </div>
             </div>
 
@@ -134,7 +137,7 @@ export default function AccountPage() {
               </label>
               <div className="flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl">
                 <Mail className="w-5 h-5 text-purple-400" />
-                <span className="text-white">{user.email}</span>
+                <span className="text-white">{displayUser.email}</span>
               </div>
             </div>
           </div>
@@ -152,7 +155,7 @@ export default function AccountPage() {
               </label>
               <div className="flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl">
                 <Phone className="w-5 h-5 text-blue-400" />
-                <span className="text-white">{user.phone}</span>
+                <span className="text-white">{displayUser.phone}</span>
               </div>
             </div>
 
@@ -163,7 +166,7 @@ export default function AccountPage() {
               </label>
               <div className="flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl">
                 <Building2 className="w-5 h-5 text-purple-400" />
-                <span className="text-white">{user.company}</span>
+                <span className="text-white">{displayUser.company}</span>
               </div>
             </div>
 
@@ -173,7 +176,7 @@ export default function AccountPage() {
                 Member Since
               </label>
               <div className="flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl">
-                <span className="text-white">{new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+                <span className="text-white">{new Date(displayUser.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
               </div>
             </div>
           </div>
