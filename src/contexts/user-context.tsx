@@ -1,32 +1,92 @@
 "use client";
 
-import { createContext, useContext, ReactNode } from "react";
+import { createContext, useContext, ReactNode, useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
-// Simple user interface - no authentication needed
 export interface User {
   id: string;
-  firstName: string;
-  lastName: string;
   email: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  company: string;
+  created_at: string;
 }
 
 interface UserContextType {
-  user: User;
+  user: User | null;
+  isLoading: boolean;
+  supabaseUser: SupabaseUser | null;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Default user - no login required
-const DEFAULT_USER: User = {
-  id: "user-1",
-  firstName: "User",
-  lastName: "",
-  email: "user@example.com",
-};
-
 export function UserProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [supabaseUser, setSupabaseUser] = useState<SupabaseUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const supabase = createClient();
+
+  useEffect(() => {
+    // Get initial session
+    const getUser = async () => {
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+
+      if (authUser) {
+        setSupabaseUser(authUser);
+
+        // Fetch user profile from our custom table
+        const { data: profile } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", authUser.id)
+          .single();
+
+        if (profile) {
+          setUser(profile);
+        }
+      }
+
+      setIsLoading(false);
+    };
+
+    getUser();
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setSupabaseUser(session.user);
+
+        // Fetch user profile
+        const { data: profile } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", session.user.id)
+          .single();
+
+        if (profile) {
+          setUser(profile);
+        }
+      } else {
+        setUser(null);
+        setSupabaseUser(null);
+      }
+
+      setIsLoading(false);
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
+
   return (
-    <UserContext.Provider value={{ user: DEFAULT_USER }}>
+    <UserContext.Provider value={{ user, isLoading, supabaseUser }}>
       {children}
     </UserContext.Provider>
   );

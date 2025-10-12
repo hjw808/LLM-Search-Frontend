@@ -1,17 +1,39 @@
 "use client";
 
-import { User, Mail, Phone, Building2, Edit, LogOut } from "lucide-react";
-import Link from "next/link";
+import { User, Mail, Phone, Building2, Edit, LogOut, Loader2 } from "lucide-react";
+import { useUser } from "@/contexts/user-context";
+import { signOut } from "@/lib/auth/actions";
+import { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AccountPage() {
-  // Mock user data - will be replaced with real data later
-  const userData = {
-    firstName: "John",
-    lastName: "Doe",
-    email: "john@company.com",
-    phone: "+1 (555) 000-0000",
-    company: "Your Company",
+  const { user, isLoading } = useUser();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true);
+    await signOut();
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8">
+        <Skeleton className="h-48 w-full" />
+        <div className="grid md:grid-cols-2 gap-6">
+          <Skeleton className="h-96 w-full" />
+          <Skeleton className="h-96 w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-slate-400">No user data available</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -30,9 +52,9 @@ export default function AccountPage() {
             {/* User Info */}
             <div>
               <h1 className="text-3xl font-bold text-white mb-1">
-                {userData.firstName} {userData.lastName}
+                {user.first_name} {user.last_name}
               </h1>
-              <p className="text-slate-400">{userData.email}</p>
+              <p className="text-slate-400">{user.email}</p>
             </div>
           </div>
 
@@ -42,13 +64,23 @@ export default function AccountPage() {
               <Edit className="w-4 h-4" />
               Edit Profile
             </button>
-            <Link
-              href="/login"
-              className="flex-1 md:flex-none px-6 py-3 bg-white/5 border border-white/10 text-white font-semibold rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+            <button
+              onClick={handleSignOut}
+              disabled={isSigningOut}
+              className="flex-1 md:flex-none px-6 py-3 bg-white/5 border border-white/10 text-white font-semibold rounded-xl hover:bg-white/10 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Sign Out</span>
-            </Link>
+              {isSigningOut ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="hidden sm:inline">Signing Out...</span>
+                </>
+              ) : (
+                <>
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden sm:inline">Sign Out</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>
@@ -67,7 +99,7 @@ export default function AccountPage() {
               </label>
               <div className="flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl">
                 <User className="w-5 h-5 text-blue-400" />
-                <span className="text-white">{userData.firstName}</span>
+                <span className="text-white">{user.first_name}</span>
               </div>
             </div>
 
@@ -78,7 +110,7 @@ export default function AccountPage() {
               </label>
               <div className="flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl">
                 <User className="w-5 h-5 text-blue-400" />
-                <span className="text-white">{userData.lastName}</span>
+                <span className="text-white">{user.last_name}</span>
               </div>
             </div>
 
@@ -89,7 +121,7 @@ export default function AccountPage() {
               </label>
               <div className="flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl">
                 <Mail className="w-5 h-5 text-purple-400" />
-                <span className="text-white">{userData.email}</span>
+                <span className="text-white">{user.email}</span>
               </div>
             </div>
           </div>
@@ -107,7 +139,7 @@ export default function AccountPage() {
               </label>
               <div className="flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl">
                 <Phone className="w-5 h-5 text-blue-400" />
-                <span className="text-white">{userData.phone}</span>
+                <span className="text-white">{user.phone}</span>
               </div>
             </div>
 
@@ -118,7 +150,7 @@ export default function AccountPage() {
               </label>
               <div className="flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl">
                 <Building2 className="w-5 h-5 text-purple-400" />
-                <span className="text-white">{userData.company}</span>
+                <span className="text-white">{user.company}</span>
               </div>
             </div>
 
@@ -128,7 +160,7 @@ export default function AccountPage() {
                 Member Since
               </label>
               <div className="flex items-center gap-3 px-4 py-3 bg-white/5 border border-white/10 rounded-xl">
-                <span className="text-white">{new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
+                <span className="text-white">{new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
               </div>
             </div>
           </div>

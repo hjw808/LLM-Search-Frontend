@@ -1,9 +1,47 @@
 "use client";
 
 import Link from "next/link";
-import { Sparkles, BarChart3, TrendingUp, Zap, ArrowRight } from "lucide-react";
+import { Sparkles, BarChart3, TrendingUp, Zap, ArrowRight, AlertCircle, Loader2 } from "lucide-react";
+import { useState } from "react";
+import { signIn } from "@/lib/auth/actions";
 
 export default function LoginPage() {
+  const [showSignIn, setShowSignIn] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
+
+    try {
+      const result = await signIn({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (result?.error) {
+        setError(result.error);
+        setIsLoading(false);
+      }
+      // If successful, the signIn function will redirect to /test
+    } catch (err) {
+      setError("An unexpected error occurred");
+      setIsLoading(false);
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-4 relative overflow-hidden">
       {/* Gradient overlay effects */}
@@ -94,29 +132,112 @@ export default function LoginPage() {
                   </p>
                 </div>
 
-                {/* Sign Up Button */}
-                <Link
-                  href="/sign-up"
-                  className="block w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-blue-500/50 transition-all text-center flex items-center justify-center gap-2 group"
-                >
-                  Sign Up
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Link>
+{!showSignIn ? (
+                  <>
+                    {/* Sign Up Button */}
+                    <Link
+                      href="/sign-up"
+                      className="block w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-blue-500/50 transition-all text-center flex items-center justify-center gap-2 group"
+                    >
+                      Sign Up
+                      <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                    </Link>
 
-                {/* Divider */}
-                <div className="flex items-center gap-4">
-                  <div className="flex-1 h-px bg-white/10"></div>
-                  <span className="text-sm text-slate-400">or</span>
-                  <div className="flex-1 h-px bg-white/10"></div>
-                </div>
+                    {/* Divider */}
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1 h-px bg-white/10"></div>
+                      <span className="text-sm text-slate-400">or</span>
+                      <div className="flex-1 h-px bg-white/10"></div>
+                    </div>
 
-                {/* Sign In Button */}
-                <Link
-                  href="/test"
-                  className="block w-full px-6 py-4 bg-white/5 border border-white/10 text-white font-semibold rounded-xl hover:bg-white/10 transition-all text-center"
-                >
-                  Sign In
-                </Link>
+                    {/* Sign In Button */}
+                    <button
+                      onClick={() => setShowSignIn(true)}
+                      className="block w-full px-6 py-4 bg-white/5 border border-white/10 text-white font-semibold rounded-xl hover:bg-white/10 transition-all text-center"
+                    >
+                      Sign In
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* Error Message */}
+                    {error && (
+                      <div className="flex items-center gap-3 px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+                        <AlertCircle className="w-5 h-5 text-red-400" />
+                        <p className="text-sm text-red-400">{error}</p>
+                      </div>
+                    )}
+
+                    {/* Sign In Form */}
+                    <form onSubmit={handleSignIn} className="space-y-4">
+                      {/* Email */}
+                      <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-slate-300 mb-2">
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          id="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                          required
+                          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+                          placeholder="john@company.com"
+                        />
+                      </div>
+
+                      {/* Password */}
+                      <div>
+                        <label htmlFor="password" className="block text-sm font-medium text-slate-300 mb-2">
+                          Password
+                        </label>
+                        <input
+                          type="password"
+                          id="password"
+                          name="password"
+                          value={formData.password}
+                          onChange={handleChange}
+                          required
+                          className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500/50 transition-all"
+                          placeholder="Enter your password"
+                        />
+                      </div>
+
+                      {/* Submit Button */}
+                      <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full px-6 py-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-blue-500/50 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isLoading ? (
+                          <>
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            Signing In...
+                          </>
+                        ) : (
+                          <>
+                            Sign In
+                            <ArrowRight className="w-5 h-5" />
+                          </>
+                        )}
+                      </button>
+
+                      {/* Back Button */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowSignIn(false);
+                          setError("");
+                          setFormData({ email: "", password: "" });
+                        }}
+                        className="w-full px-6 py-3 text-slate-400 hover:text-white transition-all text-center text-sm"
+                      >
+                        Back
+                      </button>
+                    </form>
+                  </>
+                )}
 
                 {/* Footer Text */}
                 <p className="text-center text-xs text-slate-500 mt-6">
