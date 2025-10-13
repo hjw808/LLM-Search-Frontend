@@ -48,12 +48,17 @@ export function UserProvider({ children }: { children: ReactNode }) {
           console.log("UserContext: Querying users table for ID:", authUser.id);
 
           // Fetch user profile from our custom table
-          const { data: profile, error } = await supabase
+          const queryPromise = supabase
             .from("users")
             .select("*")
             .eq("id", authUser.id)
             .single();
 
+          console.log("UserContext: Query initiated, waiting for response...");
+
+          const { data: profile, error } = await queryPromise;
+
+          console.log("UserContext: Query completed!");
           console.log("UserContext: Profile query result - Data:", profile);
           console.log("UserContext: Profile query result - Error:", error);
 
@@ -94,13 +99,18 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
           console.log("UserContext: Auth change - Querying users table for ID:", session.user.id);
 
-          // Fetch user profile
-          const { data: profile, error } = await supabase
+          // Fetch user profile with timeout
+          const queryPromise = supabase
             .from("users")
             .select("*")
             .eq("id", session.user.id)
             .single();
 
+          console.log("UserContext: Auth change - Query initiated, waiting for response...");
+
+          const { data: profile, error } = await queryPromise;
+
+          console.log("UserContext: Auth change - Query completed!");
           console.log("UserContext: Auth change - Profile query result - Data:", profile);
           console.log("UserContext: Auth change - Profile query result - Error:", error);
 
