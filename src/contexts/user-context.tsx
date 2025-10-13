@@ -73,12 +73,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
               console.log("UserContext: Setting user profile:", profile);
               setUser(profile);
             } else if (error) {
-              console.error("UserContext: FAILED to fetch profile. Error details:", {
-                code: error.code,
-                message: error.message,
-                details: error.details,
-                hint: error.hint,
-              });
+              console.error("UserContext: FAILED to fetch profile. Error details:", error);
             } else {
               console.error("UserContext: Profile is null but no error returned");
             }
@@ -149,12 +144,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
               console.log("UserContext: Auth change - Setting user profile:", profile);
               setUser(profile);
             } else if (error) {
-              console.error("UserContext: Auth change - FAILED to fetch profile. Error details:", {
-                code: error.code,
-                message: error.message,
-                details: error.details,
-                hint: error.hint,
-              });
+              console.error("UserContext: Auth change - FAILED to fetch profile. Error details:", error);
             } else {
               console.error("UserContext: Auth change - Profile is null but no error returned");
             }
