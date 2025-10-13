@@ -62,7 +62,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
           );
 
           try {
-            const result = await Promise.race([queryPromise, timeoutPromise]) as any;
+            const result = (await Promise.race([queryPromise, timeoutPromise])) as { data: User | null; error: unknown };
             const { data: profile, error } = result;
 
             console.log("UserContext: Query completed!");
@@ -138,7 +138,7 @@ export function UserProvider({ children }: { children: ReactNode }) {
           );
 
           try {
-            const result = await Promise.race([queryPromise, timeoutPromise]) as any;
+            const result = (await Promise.race([queryPromise, timeoutPromise])) as { data: User | null; error: unknown };
             const { data: profile, error } = result;
 
             console.log("UserContext: Auth change - Query completed!");
