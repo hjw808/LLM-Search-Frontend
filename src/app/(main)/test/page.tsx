@@ -94,9 +94,43 @@ export default function TestPage() {
     business: [],
   });
 
+  // Usage limit tracking
+  const [usageLimit, setUsageLimit] = useState<{
+    testCount: number;
+    limit: number;
+    hasTestsRemaining: boolean;
+    isLoading: boolean;
+  }>({
+    testCount: 0,
+    limit: 1,
+    hasTestsRemaining: true,
+    isLoading: true,
+  });
+
   useEffect(() => {
     loadBusinessConfig();
+    checkUsageLimit();
   }, []);
+
+  const checkUsageLimit = async () => {
+    try {
+      const response = await fetch('/api/test/usage');
+      if (response.ok) {
+        const data = await response.json();
+        setUsageLimit({
+          testCount: data.testCount,
+          limit: data.limit,
+          hasTestsRemaining: data.hasTestsRemaining,
+          isLoading: false,
+        });
+      } else {
+        setUsageLimit(prev => ({ ...prev, isLoading: false }));
+      }
+    } catch (error) {
+      console.error('Failed to check usage limit:', error);
+      setUsageLimit(prev => ({ ...prev, isLoading: false }));
+    }
+  };
 
   useEffect(() => {
     // Auto-open config modal if no business config exists
@@ -202,6 +236,16 @@ export default function TestPage() {
   };
 
   const handleStartTest = async () => {
+    // Check usage limit first
+    if (!usageLimit.hasTestsRemaining) {
+      setTestProgress({
+        status: "error",
+        progress: 0,
+        currentStep: `Monthly test limit reached (${usageLimit.testCount}/${usageLimit.limit} used). Upgrade your plan to run more tests.`,
+      });
+      return;
+    }
+
     // Validate business configuration
     if (!businessConfig || !businessConfig.name || !businessConfig.url) {
       setTestProgress({
@@ -262,6 +306,18 @@ export default function TestPage() {
 
       const data = await response.json();
 
+      // Check if limit was reached
+      if (data.limitReached || response.status === 429) {
+        setTestProgress({
+          status: "error",
+          progress: 0,
+          currentStep: `Monthly test limit reached. Upgrade your plan to run more tests.`,
+        });
+        // Refresh usage limits
+        await checkUsageLimit();
+        return;
+      }
+
       setTestProgress({
         status: "completed",
         progress: 100,
@@ -273,6 +329,9 @@ export default function TestPage() {
           error: r.error,
         })),
       });
+
+      // Refresh usage limits after successful test
+      await checkUsageLimit();
 
       // Auto-redirect to reports page after 2 seconds
       setTimeout(() => {
@@ -921,23 +980,50 @@ export default function TestPage() {
           {/* Test Controls */}
           <div>
           {testProgress.status === "idle" && (
-            <div className="flex items-center gap-4">
-              <button
-                onClick={handleStartTest}
-                disabled={!hasEnabledProviders}
-                className={`px-6 py-3 rounded-xl font-medium text-sm transition-all duration-200 flex items-center gap-2 ${
-                  hasEnabledProviders
-                    ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/50"
-                    : "bg-white/5 text-slate-500 cursor-not-allowed"
-                }`}
-              >
-                <Play className="w-4 h-4" />
-                Start Test
-              </button>
-              {!hasEnabledProviders && (
-                <p className="text-sm text-slate-400">
-                  Enable at least one provider to run tests
-                </p>
+            <div className="space-y-4">
+              {/* Usage Limit Badge */}
+              {!usageLimit.isLoading && (
+                <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium ${
+                  usageLimit.hasTestsRemaining
+                    ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                    : "bg-red-500/20 text-red-400 border border-red-500/30"
+                }`}>
+                  <span>{usageLimit.testCount}/{usageLimit.limit} Tests Used This Month</span>
+                </div>
+              )}
+
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={handleStartTest}
+                  disabled={!hasEnabledProviders || !usageLimit.hasTestsRemaining}
+                  className={`px-6 py-3 rounded-xl font-medium text-sm transition-all duration-200 flex items-center gap-2 ${
+                    hasEnabledProviders && usageLimit.hasTestsRemaining
+                      ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/50"
+                      : "bg-white/5 text-slate-500 cursor-not-allowed"
+                  }`}
+                >
+                  <Play className="w-4 h-4" />
+                  Start Test
+                </button>
+                {!hasEnabledProviders && (
+                  <p className="text-sm text-slate-400">
+                    Enable at least one provider to run tests
+                  </p>
+                )}
+              </div>
+
+              {/* Subscription CTA */}
+              {!usageLimit.hasTestsRemaining && (
+                <div className="backdrop-blur-xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 rounded-xl p-6">
+                  <h4 className="text-lg font-bold text-white mb-2">Upgrade to Run More Tests</h4>
+                  <p className="text-sm text-slate-300 mb-4">
+                    You've used all {usageLimit.limit} of your free tests this month. Upgrade to our Pro plan for unlimited testing.
+                  </p>
+                  <button className="px-6 py-3 rounded-xl font-medium text-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/50 transition-all flex items-center gap-2">
+                    <Sparkles className="w-4 h-4" />
+                    Upgrade to Pro
+                  </button>
+                </div>
               )}
             </div>
           )}
@@ -998,20 +1084,52 @@ export default function TestPage() {
                 ))}
               </div>
 
-              <div className="flex gap-3">
-                <button
-                  onClick={handleStartTest}
-                  className="px-6 py-3 rounded-xl font-medium text-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/50 transition-all flex items-center gap-2"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  Run Another Test
-                </button>
-                <a
-                  href="/reports"
-                  className="px-6 py-3 rounded-xl font-medium text-sm bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all"
-                >
-                  View Results
-                </a>
+              <div className="space-y-4">
+                {/* Show usage after test completion */}
+                {!usageLimit.isLoading && (
+                  <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium ${
+                    usageLimit.hasTestsRemaining
+                      ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                      : "bg-red-500/20 text-red-400 border border-red-500/30"
+                  }`}>
+                    <span>{usageLimit.testCount}/{usageLimit.limit} Tests Used This Month</span>
+                  </div>
+                )}
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleStartTest}
+                    disabled={!usageLimit.hasTestsRemaining}
+                    className={`px-6 py-3 rounded-xl font-medium text-sm transition-all flex items-center gap-2 ${
+                      usageLimit.hasTestsRemaining
+                        ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/50"
+                        : "bg-white/5 text-slate-500 cursor-not-allowed"
+                    }`}
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Run Another Test
+                  </button>
+                  <a
+                    href="/reports"
+                    className="px-6 py-3 rounded-xl font-medium text-sm bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all"
+                  >
+                    View Results
+                  </a>
+                </div>
+
+                {/* Subscription CTA after test completion */}
+                {!usageLimit.hasTestsRemaining && (
+                  <div className="backdrop-blur-xl bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 rounded-xl p-6">
+                    <h4 className="text-lg font-bold text-white mb-2">Want to Run More Tests?</h4>
+                    <p className="text-sm text-slate-300 mb-4">
+                      You've reached your monthly limit. Upgrade to Pro for unlimited testing and advanced features.
+                    </p>
+                    <button className="px-6 py-3 rounded-xl font-medium text-sm bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/50 transition-all flex items-center gap-2">
+                      <Sparkles className="w-4 h-4" />
+                      Upgrade to Pro
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           )}

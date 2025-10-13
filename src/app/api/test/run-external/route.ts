@@ -4,6 +4,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
 
 interface TestRequest {
   providers: string[];
@@ -22,6 +23,45 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'At least one provider must be selected' },
         { status: 400 }
+      );
+    }
+
+    // Check usage limits
+    const supabase = await createClient();
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Call usage API to increment and check limit
+    const usageResponse = await fetch(`${request.nextUrl.origin}/api/test/usage`, {
+      method: 'POST',
+      headers: {
+        'Cookie': request.headers.get('cookie') || '',
+      },
+    });
+
+    if (usageResponse.status === 429) {
+      const usageData = await usageResponse.json();
+      return NextResponse.json(
+        {
+          error: 'Monthly test limit reached',
+          limitReached: true,
+          limit: usageData.limit
+        },
+        { status: 429 }
+      );
+    }
+
+    if (!usageResponse.ok) {
+      console.error('Usage check failed:', await usageResponse.text());
+      return NextResponse.json(
+        { error: 'Failed to check usage limits' },
+        { status: 500 }
       );
     }
 
