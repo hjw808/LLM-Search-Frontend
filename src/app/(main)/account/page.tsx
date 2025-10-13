@@ -3,12 +3,33 @@
 import { User, Mail, Phone, Building2, Edit, LogOut, Loader2 } from "lucide-react";
 import { useUser } from "@/contexts/user-context";
 import { signOut } from "@/lib/auth/actions";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { createClient } from "@/lib/supabase/client";
 
 export default function AccountPage() {
   const { user, isLoading, supabaseUser } = useUser();
   const [isSigningOut, setIsSigningOut] = useState(false);
+  const [directQueryResult, setDirectQueryResult] = useState<{data: unknown; error: unknown} | null>(null);
+
+  // Direct query to bypass context
+  useEffect(() => {
+    const testDirectQuery = async () => {
+      if (supabaseUser) {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from("users")
+          .select("*")
+          .eq("id", supabaseUser.id)
+          .single();
+
+        console.log("DIRECT QUERY - Data:", data);
+        console.log("DIRECT QUERY - Error:", error);
+        setDirectQueryResult({ data, error });
+      }
+    };
+    testDirectQuery();
+  }, [supabaseUser]);
 
   const handleSignOut = async () => {
     setIsSigningOut(true);
@@ -19,6 +40,7 @@ export default function AccountPage() {
   console.log("Account Page - isLoading:", isLoading);
   console.log("Account Page - user:", user);
   console.log("Account Page - supabaseUser:", supabaseUser);
+  console.log("Account Page - directQueryResult:", directQueryResult);
 
   if (isLoading) {
     return (
