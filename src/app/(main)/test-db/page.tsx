@@ -3,9 +3,19 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+interface TestResults {
+  authUser: unknown;
+  profileData?: unknown;
+}
+
+interface TestErrors {
+  authError?: unknown;
+  queryError?: unknown;
+}
+
 export default function TestDBPage() {
-  const [results, setResults] = useState<any>(null);
-  const [error, setError] = useState<any>(null);
+  const [results, setResults] = useState<TestResults | null>(null);
+  const [error, setError] = useState<TestErrors | null>(null);
 
   useEffect(() => {
     const test = async () => {
