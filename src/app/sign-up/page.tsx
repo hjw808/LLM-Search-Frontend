@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Sparkles, ArrowRight, ArrowLeft, AlertCircle, Loader2 } from "lucide-react";
-import { signUp } from "@/lib/auth/actions";
+import { createClient } from "@/lib/supabase/client";
 
 export default function SignUpPage() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -36,20 +38,29 @@ export default function SignUpPage() {
 
     setIsLoading(true);
 
-    const result = await signUp({
-      firstName: formData.firstName,
-      lastName: formData.lastName,
+    const supabase = createClient();
+    const { error: signUpError } = await supabase.auth.signUp({
       email: formData.email,
-      phone: formData.phone,
-      company: formData.company,
       password: formData.password,
+      options: {
+        data: {
+          first_name: formData.firstName,
+          last_name: formData.lastName,
+          phone: formData.phone,
+          company: formData.company,
+        },
+      },
     });
 
-    if (result?.error) {
-      setError(result.error);
+    if (signUpError) {
+      setError(signUpError.message);
       setIsLoading(false);
+      return;
     }
-    // If successful, the signUp function will redirect to /test (redirect throws to interrupt execution)
+
+    // Redirect on success
+    router.push("/test");
+    router.refresh();
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

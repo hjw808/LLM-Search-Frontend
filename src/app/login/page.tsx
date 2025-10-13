@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Sparkles, BarChart3, TrendingUp, Zap, ArrowRight, AlertCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
-import { signIn } from "@/lib/auth/actions";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showSignIn, setShowSignIn] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -19,16 +21,21 @@ export default function LoginPage() {
     setError("");
     setIsLoading(true);
 
-    const result = await signIn({
+    const supabase = createClient();
+    const { error: signInError } = await supabase.auth.signInWithPassword({
       email: formData.email,
       password: formData.password,
     });
 
-    if (result?.error) {
-      setError(result.error);
+    if (signInError) {
+      setError(signInError.message);
       setIsLoading(false);
+      return;
     }
-    // If successful, the signIn function will redirect to /test (redirect throws to interrupt execution)
+
+    // Redirect on success
+    router.push("/test");
+    router.refresh();
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

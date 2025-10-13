@@ -1,13 +1,6 @@
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-
-let client: ReturnType<typeof createSupabaseClient> | null = null
+import { createBrowserClient } from '@supabase/ssr'
 
 export function createClient() {
-  // Return singleton instance
-  if (client) {
-    return client
-  }
-
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -20,15 +13,8 @@ export function createClient() {
     throw new Error('Supabase URL or Key not configured')
   }
 
-  client = createSupabaseClient(url, key, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-    },
-  })
-
+  // Use default configuration to match server-side cookies
+  const client = createBrowserClient(url, key)
   console.log('Supabase Client Init - Client created successfully')
   return client
 }
