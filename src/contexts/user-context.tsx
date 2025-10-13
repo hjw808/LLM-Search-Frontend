@@ -56,24 +56,48 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
           console.log("UserContext: Query initiated, waiting for response...");
 
-          const { data: profile, error } = await queryPromise;
+          // Add 5 second timeout
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Query timeout after 5s")), 5000)
+          );
 
-          console.log("UserContext: Query completed!");
-          console.log("UserContext: Profile query result - Data:", profile);
-          console.log("UserContext: Profile query result - Error:", error);
+          try {
+            const result = await Promise.race([queryPromise, timeoutPromise]) as any;
+            const { data: profile, error } = result;
 
-          if (profile) {
-            console.log("UserContext: Setting user profile:", profile);
-            setUser(profile);
-          } else if (error) {
-            console.error("UserContext: FAILED to fetch profile. Error details:", {
-              code: error.code,
-              message: error.message,
-              details: error.details,
-              hint: error.hint,
-            });
-          } else {
-            console.error("UserContext: Profile is null but no error returned");
+            console.log("UserContext: Query completed!");
+            console.log("UserContext: Profile query result - Data:", profile);
+            console.log("UserContext: Profile query result - Error:", error);
+
+            if (profile) {
+              console.log("UserContext: Setting user profile:", profile);
+              setUser(profile);
+            } else if (error) {
+              console.error("UserContext: FAILED to fetch profile. Error details:", {
+                code: error.code,
+                message: error.message,
+                details: error.details,
+                hint: error.hint,
+              });
+            } else {
+              console.error("UserContext: Profile is null but no error returned");
+            }
+          } catch (timeoutError) {
+            console.error("UserContext: QUERY TIMEOUT OR ERROR:", timeoutError);
+            // Try direct fetch as fallback
+            console.log("UserContext: Attempting fallback query...");
+            try {
+              const { data: profile, error } = await queryPromise;
+              console.log("UserContext: Fallback query - Data:", profile);
+              console.log("UserContext: Fallback query - Error:", error);
+
+              if (profile) {
+                console.log("UserContext: Fallback - Setting user profile:", profile);
+                setUser(profile);
+              }
+            } catch (fallbackError) {
+              console.error("UserContext: Fallback query also failed:", fallbackError);
+            }
           }
         } else {
           console.log("UserContext: No auth user found");
@@ -108,24 +132,48 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
           console.log("UserContext: Auth change - Query initiated, waiting for response...");
 
-          const { data: profile, error } = await queryPromise;
+          // Add 5 second timeout
+          const timeoutPromise = new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Query timeout after 5s")), 5000)
+          );
 
-          console.log("UserContext: Auth change - Query completed!");
-          console.log("UserContext: Auth change - Profile query result - Data:", profile);
-          console.log("UserContext: Auth change - Profile query result - Error:", error);
+          try {
+            const result = await Promise.race([queryPromise, timeoutPromise]) as any;
+            const { data: profile, error } = result;
 
-          if (profile) {
-            console.log("UserContext: Auth change - Setting user profile:", profile);
-            setUser(profile);
-          } else if (error) {
-            console.error("UserContext: Auth change - FAILED to fetch profile. Error details:", {
-              code: error.code,
-              message: error.message,
-              details: error.details,
-              hint: error.hint,
-            });
-          } else {
-            console.error("UserContext: Auth change - Profile is null but no error returned");
+            console.log("UserContext: Auth change - Query completed!");
+            console.log("UserContext: Auth change - Profile query result - Data:", profile);
+            console.log("UserContext: Auth change - Profile query result - Error:", error);
+
+            if (profile) {
+              console.log("UserContext: Auth change - Setting user profile:", profile);
+              setUser(profile);
+            } else if (error) {
+              console.error("UserContext: Auth change - FAILED to fetch profile. Error details:", {
+                code: error.code,
+                message: error.message,
+                details: error.details,
+                hint: error.hint,
+              });
+            } else {
+              console.error("UserContext: Auth change - Profile is null but no error returned");
+            }
+          } catch (timeoutError) {
+            console.error("UserContext: Auth change - QUERY TIMEOUT OR ERROR:", timeoutError);
+            // Try direct fetch as fallback
+            console.log("UserContext: Attempting fallback query...");
+            try {
+              const { data: profile, error } = await queryPromise;
+              console.log("UserContext: Fallback query - Data:", profile);
+              console.log("UserContext: Fallback query - Error:", error);
+
+              if (profile) {
+                console.log("UserContext: Fallback - Setting user profile:", profile);
+                setUser(profile);
+              }
+            } catch (fallbackError) {
+              console.error("UserContext: Fallback query also failed:", fallbackError);
+            }
           }
         } else {
           console.log("UserContext: Auth change - No session user, clearing state");
