@@ -32,34 +32,52 @@ export function UserProvider({ children }: { children: ReactNode }) {
 
     // Get initial session
     const getUser = async () => {
-      console.log("UserContext: Fetching user...");
-      const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser();
+      try {
+        console.log("UserContext: Fetching user...");
+        const {
+          data: { user: authUser },
+          error: authError,
+        } = await supabase.auth.getUser();
 
-      console.log("UserContext: Auth user:", authUser);
+        console.log("UserContext: Auth user:", authUser);
+        console.log("UserContext: Auth error:", authError);
 
-      if (authUser) {
-        setSupabaseUser(authUser);
+        if (authUser) {
+          setSupabaseUser(authUser);
 
-        // Fetch user profile from our custom table
-        const { data: profile, error } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", authUser.id)
-          .single();
+          console.log("UserContext: Querying users table for ID:", authUser.id);
 
-        console.log("UserContext: Profile data:", profile);
-        console.log("UserContext: Profile error:", error);
+          // Fetch user profile from our custom table
+          const { data: profile, error } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", authUser.id)
+            .single();
 
-        if (profile) {
-          setUser(profile);
-        } else if (error) {
-          console.error("UserContext: Error fetching profile:", error);
+          console.log("UserContext: Profile query result - Data:", profile);
+          console.log("UserContext: Profile query result - Error:", error);
+
+          if (profile) {
+            console.log("UserContext: Setting user profile:", profile);
+            setUser(profile);
+          } else if (error) {
+            console.error("UserContext: FAILED to fetch profile. Error details:", {
+              code: error.code,
+              message: error.message,
+              details: error.details,
+              hint: error.hint,
+            });
+          } else {
+            console.error("UserContext: Profile is null but no error returned");
+          }
+        } else {
+          console.log("UserContext: No auth user found");
         }
+      } catch (err) {
+        console.error("UserContext: Exception in getUser:", err);
+      } finally {
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
     };
 
     getUser();
@@ -68,32 +86,47 @@ export function UserProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("UserContext: Auth state changed -", event, session?.user?.email);
+      try {
+        console.log("UserContext: Auth state changed -", event, session?.user?.email);
 
-      if (session?.user) {
-        setSupabaseUser(session.user);
+        if (session?.user) {
+          setSupabaseUser(session.user);
 
-        // Fetch user profile
-        const { data: profile, error } = await supabase
-          .from("users")
-          .select("*")
-          .eq("id", session.user.id)
-          .single();
+          console.log("UserContext: Auth change - Querying users table for ID:", session.user.id);
 
-        console.log("UserContext: Profile after auth change:", profile);
-        console.log("UserContext: Profile error after auth change:", error);
+          // Fetch user profile
+          const { data: profile, error } = await supabase
+            .from("users")
+            .select("*")
+            .eq("id", session.user.id)
+            .single();
 
-        if (profile) {
-          setUser(profile);
-        } else if (error) {
-          console.error("UserContext: Error fetching profile after auth change:", error);
+          console.log("UserContext: Auth change - Profile query result - Data:", profile);
+          console.log("UserContext: Auth change - Profile query result - Error:", error);
+
+          if (profile) {
+            console.log("UserContext: Auth change - Setting user profile:", profile);
+            setUser(profile);
+          } else if (error) {
+            console.error("UserContext: Auth change - FAILED to fetch profile. Error details:", {
+              code: error.code,
+              message: error.message,
+              details: error.details,
+              hint: error.hint,
+            });
+          } else {
+            console.error("UserContext: Auth change - Profile is null but no error returned");
+          }
+        } else {
+          console.log("UserContext: Auth change - No session user, clearing state");
+          setUser(null);
+          setSupabaseUser(null);
         }
-      } else {
-        setUser(null);
-        setSupabaseUser(null);
+      } catch (err) {
+        console.error("UserContext: Exception in auth state change:", err);
+      } finally {
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
     });
 
     return () => {
